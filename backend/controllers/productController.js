@@ -1,7 +1,7 @@
 const Product = require('../models/Product');
 const Category = require('../models/Category');
 
-// Get all products by category
+
 exports.getProductsByCategory = async (req, res) => {
   try {
     const { categoryId } = req.params;
@@ -12,7 +12,7 @@ exports.getProductsByCategory = async (req, res) => {
   }
 };
 
-// Get product detail
+
 exports.getProductDetail = async (req, res) => {
   try {
     const { productId } = req.params;
@@ -24,7 +24,7 @@ exports.getProductDetail = async (req, res) => {
   }
 };
 
-// Create category
+
 exports.createCategory = async (req, res) => {
   try {
     const { name, description } = req.body;
@@ -35,7 +35,7 @@ exports.createCategory = async (req, res) => {
   }
 };
 
-// Create product
+
 exports.createProduct = async (req, res) => {
   try {
     const { name, description, premium, coverageAmount, category, features, insurer, planType } = req.body;

@@ -1,0 +1,119 @@
+/* components/InsurancePartners/InsurancePartners.css */
+.insurance-partners {
+    padding: 60px 0;
+    background-color: #f9f9f9;
+  }
+  
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 15px;
+  }
+  
+  .title-wrapper {
+    text-align: center;
+    margin-bottom: 40px;
+  }
+  
+  .title-wrapper h2 {
+    font-size: 32px;
+    color: #333;
+    margin-bottom: 10px;
+  }
+  
+  .subtext {
+    font-size: 16px;
+    color: #666;
+  }
+  
+  .tabs-container {
+    margin-bottom: 30px;
+  }
+  
+  .tabs-list {
+    display: flex;
+    justify-content: center;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  
+  .tabs-list li {
+    padding: 10px 20px;
+    cursor: pointer;
+    border-radius: 4px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+  }
+  
+  .tabs-list li:hover {
+    background-color: #f0f0f0;
+  }
+  
+  .tabs-list li.active {
+    background-color: #0066cc;
+    color: white;
+  }
+  
+  .partners-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 20px;
+  }
+  
+  .partner-card {
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease;
+  }
+  
+  .partner-card:hover {
+    transform: translateY(-5px);
+  }
+  
+  .image-area {
+    padding: 15px;
+    text-align: center;
+  }
+  
+  .partner-link {
+    text-decoration: none;
+    color: #333;
+  }
+  
+  .image-container {
+    display: block;
+    margin-bottom: 15px;
+  }
+  
+  .partner-logo {
+    max-width: 100%;
+    height: auto;
+    object-fit: contain;
+  }
+  
+  .partner-name {
+    font-size: 14px;
+    font-weight: 500;
+    text-align: center;
+  }
+  
+  @media (max-width: 768px) {
+    .partners-grid {
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    }
+    
+    .tabs-list {
+      overflow-x: auto;
+      justify-content: flex-start;
+      padding-bottom: 10px;
+    }
+    
+    .tabs-list li {
+      white-space: nowrap;
+    }
+  }

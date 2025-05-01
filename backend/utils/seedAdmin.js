@@ -19,3 +19,4 @@ const seedAdmin = async () => {
 };
 
 module.exports = seedAdmin;
+

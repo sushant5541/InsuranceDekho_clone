@@ -2,7 +2,7 @@ const express = require('express');
 const dotenv = require('dotenv');
 const cors = require('cors');
 const connectDB = require('./config/database');
-
+const session = require('express-session')
 
 const authRoute = require('./routes/authRoutes')
 const policyRoute = require('./routes/policyRoutes')
@@ -19,8 +19,14 @@ app.use(cors({
     origin: 'http://localhost:3000', 
     credentials: true
   }));
-  app.use(express.json());
 
+  app.use(express.json());
+  app.use(session({
+    secret: 'secretKey',
+    resave: false,
+    saveUninitialized: false,
+    cookie: { secure: false } 
+  }));
 
 app.use('/api/products', productRoutes);
 app.use('/api/auth', authRoute);
