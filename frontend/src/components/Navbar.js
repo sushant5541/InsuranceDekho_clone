@@ -1,8 +1,12 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import '../styles/Navbar.css';
 
 const Navbar = () => {
+  const { user, logout } = useAuth();
+
   const [activeDropdown, setActiveDropdown] = useState(null);
 
   const handleMouseEnter = (menu) => setActiveDropdown(menu);
@@ -241,7 +245,34 @@ const Navbar = () => {
         {/* Right Side */}
         <div className="d-flex align-items-center gap-3">
           <span className="text-primary fw-medium">Track & Policy Download</span>
-          <button className="btn btn-warning text-white">Login</button>
+          {user ? (
+            <div className="dropdown">
+              <button 
+                className="btn btn-outline-primary dropdown-toggle" 
+                type="button" 
+                id="userDropdown"
+                data-bs-toggle="dropdown"
+                aria-expanded="false"
+              >
+                <img 
+                  src="/pwa/img/myaccount/img_profile.svg" 
+                  alt="Profile" 
+                  width="24" 
+                  height="24" 
+                  className="me-2"
+                />
+                {user.name.split(' ')[0]} {/* Show first name */}
+              </button>
+              <ul className="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                <li><Link className="dropdown-item" to="/dashboard">Dashboard</Link></li>
+                <li><Link className="dropdown-item" to="/profile">Profile</Link></li>
+                <li><hr className="dropdown-divider" /></li>
+                <li><button className="dropdown-item" onClick={logout}>Logout</button></li>
+              </ul>
+            </div>
+          ) : (
+            <Link to="/login" className="btn btn-warning text-white">Login</Link>
+          )}
         </div>
       </div>
     </nav>
@@ -249,3 +280,4 @@ const Navbar = () => {
 };
 
 export default Navbar;
+

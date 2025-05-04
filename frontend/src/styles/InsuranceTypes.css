@@ -1,0 +1,168 @@
+.insurance-plans {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 2rem;
+    margin-top: 2rem;
+  }
+  
+  .plan-card {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    border: 1px solid #dee2e6;
+    transition: all 0.3s ease;
+  }
+  
+  .plan-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    border-color: #e63946;
+  }
+  
+  .plan-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem;
+    background-color: #f1faee;
+    border-bottom: 1px solid #dee2e6;
+  }
+  
+  .company-logo {
+    display: flex;
+    align-items: center;
+  }
+  
+  .company-logo img {
+    width: 60px;
+    height: auto;
+    margin-right: 1rem;
+    object-fit: contain;
+  }
+  
+  .company-logo span {
+    font-weight: 600;
+    color: #1d3557;
+  }
+  
+  .plan-stats {
+    display: flex;
+    text-align: right;
+  }
+  
+  .plan-stats div {
+    margin-left: 1rem;
+  }
+  
+  .plan-stats span {
+    display: block;
+    font-size: 0.8rem;
+    color: #6c757d;
+  }
+  
+  .plan-stats strong {
+    font-size: 1rem;
+    color: #1d3557;
+  }
+  
+  .plan-details {
+    padding: 1.5rem;
+  }
+  
+  .plan-details h3 {
+    color: #1d3557;
+    margin-bottom: 0.5rem;
+    font-size: 1.3rem;
+  }
+  
+  .plan-details .description {
+    color: #495057;
+    font-size: 0.95rem;
+    margin-bottom: 1rem;
+    line-height: 1.6;
+  }
+  
+  .starting-price {
+    margin: 1.5rem 0;
+    font-size: 1.1rem;
+    color: #495057;
+  }
+  
+  .starting-price span {
+    color: #e63946;
+    font-weight: bold;
+    font-size: 1.5rem;
+    margin-left: 0.5rem;
+  }
+  
+  .get-quote-btn {
+    width: 100%;
+    padding: 0.8rem;
+    background-color: #e63946;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  .get-quote-btn:hover {
+    background-color: #c1121f;
+  }
+  
+  .key-features {
+    padding: 1.5rem;
+    background-color: #f8f9fa;
+    border-top: 1px solid #dee2e6;
+  }
+  
+  .key-features h4 {
+    margin-bottom: 1rem;
+    color: #1d3557;
+    font-size: 1.1rem;
+  }
+  
+  .key-features ul {
+    list-style: none;
+    padding: 0;
+  }
+  
+  .key-features li {
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    color: #495057;
+    font-size: 0.95rem;
+  }
+  
+  .tick-icon {
+    color: #2a9d8f;
+    margin-right: 0.5rem;
+    font-weight: bold;
+  }
+  
+  .loading {
+    text-align: center;
+    padding: 2rem;
+    color: #6c757d;
+    font-style: italic;
+  }
+  
+  @media (max-width: 768px) {
+    .insurance-plans {
+      grid-template-columns: 1fr;
+    }
+    
+    .plan-header {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+    
+    .plan-stats {
+      margin-top: 1rem;
+      width: 100%;
+      justify-content: space-between;
+    }
+  }

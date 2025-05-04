@@ -11,7 +11,7 @@ const CarouselComponent = () => {
         data-bs-interval="3000"
         style={{ width: '90%', maxWidth: '1000px', height: '200px' }}
       >
-        <div className="carousel-inner" style={{ height: '100%' }}>
+        <div className="carousel-inner" style={{ height: '100%', cursor:'pointer' }}>
           <div className="carousel-item active">
             <img
               src="https://static.insurancedekho.com/pwa/img/nfo/lic-desktop-banner.png"
@@ -23,7 +23,7 @@ const CarouselComponent = () => {
           <div className="carousel-item">
             
             <img
-              src=""
+              src="https://static.insurancedekho.com/pwa/img/nfo/lic-desktop-banner.png"
               className="d-block w-100"
               alt="Slide 2"
               style={{ height: '100%', objectFit: 'cover' }}

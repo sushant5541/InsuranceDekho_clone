@@ -1,0 +1,110 @@
+/* Dashboard Layout */
+.app-content {
+    padding: 20px;
+    background-color: #f8f9fa;
+    min-height: calc(100vh - 72px); /* Adjust based on navbar height */
+  }
+  
+  .my-account-body {
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  
+  .my-account-wrap {
+    display: flex;
+    gap: 20px;
+  }
+  
+  .my-account-board {
+    flex: 1;
+    background: white;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  }
+  
+  /* Profile Card */
+  .profile-card {
+    padding: 20px;
+    margin-bottom: 20px;
+    border: 1px solid #e0e0e0;
+  }
+  
+  .profile-info {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+  }
+  
+  .profile-img {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    object-fit: cover;
+  }
+  
+  .profile-info h4 {
+    margin: 0;
+    font-size: 1.2rem;
+    color: #333;
+  }
+  
+  .profile-info span {
+    color: #666;
+    font-size: 0.9rem;
+  }
+  
+  .edit-btn {
+    background: none;
+    border: none;
+    color: #0066cc;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    cursor: pointer;
+    font-size: 0.9rem;
+  }
+  
+  .edit-btn:hover {
+    text-decoration: underline;
+  }
+  
+  /* No Policy Found */
+  .no-policy-found {
+    text-align: center;
+    padding: 40px 20px;
+  }
+  
+  .empty-policy-img {
+    width: 150px;
+    height: 150px;
+    margin-bottom: 20px;
+  }
+  
+  .no-policy-found h3 {
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 10px;
+  }
+  
+  .no-policy-found p {
+    color: #666;
+    margin-bottom: 20px;
+  }
+  
+  .try-us-btn {
+    padding: 10px 25px;
+    font-weight: 500;
+  }
+  
+  /* Responsive */
+  @media (max-width: 768px) {
+    .my-account-wrap {
+      flex-direction: column;
+    }
+    
+    .profile-info {
+      flex-direction: column;
+      text-align: center;
+    }
+  }

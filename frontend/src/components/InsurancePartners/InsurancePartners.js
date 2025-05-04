@@ -1,4 +1,4 @@
-// components/InsurancePartners/InsurancePartners.jsx
+
 import React, { useState } from 'react';
 import PartnerCard from './PartnerCard';
 import './InsurancePartners.css';
