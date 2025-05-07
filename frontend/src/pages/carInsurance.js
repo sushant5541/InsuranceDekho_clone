@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import '../styles/CarInsurance.css';
+import Navbar from '../components/Navbar'
 
 const CarInsurance = () => {
   const [formData, setFormData] = useState({
@@ -65,6 +66,8 @@ const CarInsurance = () => {
   };
 
   return (
+    <>
+    <Navbar/>
     <div className="car-insurance-page">
       {/* Hero Banner */}
       <div className="hero-banner">
@@ -262,6 +265,7 @@ const CarInsurance = () => {
         </div>
       </section>
     </div>
+    </>
   );
 };
 

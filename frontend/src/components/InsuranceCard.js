@@ -5,10 +5,10 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 const insuranceItems = [
   { title: "Car Insurance", img: "https://www.insurancedekho.com/pwa/img/v2_icon_car.svg", path: "/car-insurance" },
   { title: "Bike Insurance", img: "https://www.insurancedekho.com/pwa/img/v2_icon_bike.svg", path: "/bike-insurance" },
+  { title: "Health Insurance", img: "https://www.insurancedekho.com/pwa/img/v2_icon_health.svg", path: "/Health-insurance" },
   { title: "Term Insurance", img: "https://static.insurancedekho.com/pwa/img/v2_icon_life.svg", path: "/term-insurance" },
   { title: "Investment Plans", img: "https://www.insurancedekho.com/pwa/img/v2_icon_investment.svg", path: "/investment-plans" },
   { title: "Family Health", img: "https://static.insurancedekho.com/pwa/img/v2_icon_health.svg", path: "/family-health" },
-  { title: "View More", img: "https://static.insurancedekho.com/pwa/img/v2_icon_viewmore.svg", path: "/more-insurance" },
 ];
 
 const InsuranceCards = () => {

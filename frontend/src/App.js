@@ -5,7 +5,7 @@ import Navbar from './components/Navbar';
 import Home from './pages/Home';
 import Login from './pages/Login';
 import Register from './pages/Register';
-import Dashboard from './pages/Dashboard';
+import Dashboard from './pages/UserDashboard';
 import EditProfile from './pages/EditProfile';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
@@ -14,10 +14,13 @@ import BikeInsurance from './pages/bikeInsurance';
 import HealthInsurance from './pages/healthinsurance'
 import LifeInsurance from './pages/lifeInsurance'
 import TermInsurance from './pages/termInsurance'
-
+import RenewAuth from './pages/RenewAuth';
+import PremiumDetails from './pages/CheckPremium';
+import QuotePage from './pages/HealthQuote';
 
 function App() {
   return (
+    <div>
     <AuthProvider>
       <Router>
         <Routes>
@@ -45,11 +48,15 @@ function App() {
 
           <Route path="/car-insurance" element={<CarInsurance />} />
           <Route path="/bike-insurance" element={<BikeInsurance />} />
+          <Route path="/health-insurance" element={<HealthInsurance />} />
+          <Route path="/Renew" element={<RenewAuth />} />
+          <Route path="/check-premium" element={<PremiumDetails />} />
+          <Route path="/health-quote" element={<QuotePage/>} />
           <Route path="/term-insurance" element={<TermInsurance />} />
-
         </Routes>
       </Router>
     </AuthProvider>
+    </div>
   );
 }
 

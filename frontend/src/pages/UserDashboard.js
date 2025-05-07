@@ -1,6 +1,6 @@
 import React from 'react';
 import { useAuth } from '../context/AuthContext';
-import '../styles/Dashboard.css';
+import '../styles/UserDashboard.css';
 import { useNavigate, useLocation } from 'react-router-dom';
 
 const Dashboard = () => {
