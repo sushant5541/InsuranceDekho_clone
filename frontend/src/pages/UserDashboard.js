@@ -3,12 +3,13 @@ import { useAuth } from '../context/AuthContext';
 import '../styles/UserDashboard.css';
 import { useNavigate, useLocation } from 'react-router-dom';
 
-const Dashboard = () => {
+const UserDashboard = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
   return (
+    <>
     <div className="app-content">
       <div className="my-account-body my-account-v2">
         <div className="my-account-wrap">
@@ -17,14 +18,9 @@ const Dashboard = () => {
               <div className="card-v2 radius-6 bottom-20 my-account-card profile-card">
                 <div className="d-flex align-items-center justify-content-between">
                   <div className="profile-info">
-                    <img 
-                      src="/pwa/img/myaccount/img_profile.svg" 
-                      alt="Profile" 
-                      className="profile-img"
-                    />
                     <div>
                       <h4>{user?.name || 'User'}</h4>
-                      <span>Age 22 | Male</span>
+                      
                     </div>
                   </div>
                   {location.state?.success && (
@@ -68,7 +64,10 @@ const Dashboard = () => {
         </div>
       </div>
     </div>
+    </>
   );
 };
 
-export default Dashboard;
+
+
+export default UserDashboard;

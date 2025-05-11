@@ -13,7 +13,7 @@ const insuranceItems = [
 
 const InsuranceCards = () => {
   return (
-    <div className="container">
+    <div className="container" style={{maxWidth:"100%"}}>
       <div className="p-4 border rounded shadow-sm bg-white">
         <div className="row justify-content-center g-4">
           {insuranceItems.slice(0, 5).map((item, index) => (

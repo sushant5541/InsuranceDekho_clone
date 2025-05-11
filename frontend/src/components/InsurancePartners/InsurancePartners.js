@@ -45,7 +45,7 @@ const InsurancePartners = () => {
 
   return (
     <section className="insurance-partners">
-      <div className="container">
+      <div className="container" style={{maxWidth:"100%"}}>
         <div className="title-wrapper">
           <h2>Our Insurance Partners</h2>
           <div className="subtext">We're associated with India's popular insurance companies.</div>

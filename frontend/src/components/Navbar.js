@@ -1,211 +1,80 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import '../styles/Navbar.css';
 
 const Navbar = () => {
   const { user, logout } = useAuth();
-
+  const navigate = useNavigate();
   const [activeDropdown, setActiveDropdown] = useState(null);
+  const [activeSubmenu, setActiveSubmenu] = useState(null);
 
   const handleMouseEnter = (menu) => setActiveDropdown(menu);
   const handleMouseLeave = () => setActiveDropdown(null);
-  const [activeSubmenu, setActiveSubmenu] = useState(null)
+
+  // Insurance items matching your InsuranceCards component
+  const insuranceItems = [
+    { title: "Car Insurance", img: "https://www.insurancedekho.com/pwa/img/v2_icon_car.svg", path: "/car-insurance" },
+    { title: "Bike Insurance", img: "https://www.insurancedekho.com/pwa/img/v2_icon_bike.svg", path: "/bike-insurance" },
+    { title: "Health Insurance", img: "https://static.insurancedekho.com/pwa/img/v2_icon_health.svg", path: "/Health-insurance" },
+    { title: "Life Insurance", img: "https://static.insurancedekho.com/pwa/img/life_insurance.svg", path: "/life-insurance" },
+    { title: "Term Insurance", img: "https://static.insurancedekho.com/pwa/img/v2_icon_life.svg", path: "/term-insurance" },
+  ];
 
   return (
     <nav className="navbar navbar-expand-lg bg-light px-4 py-2 shadow-sm">
       <div className="container-fluid d-flex justify-content-between align-items-center">
         <div className="d-flex align-items-center gap-2">
-          <div class="logo" style={{ marginTop: 10 }}>
-            <img
-              src="https://static.insurancedekho.com/pwa/img/id-main-logo.svg"
-              alt="InsuranceDekho"
-              height="40"
-            />
-
+          <div className="logo" style={{ marginTop: 10 }}>
+            <Link to="/">
+              <img
+                src="https://static.insurancedekho.com/pwa/img/id-main-logo.svg"
+                alt="InsuranceDekho"
+                height="40"
+                style={{ cursor: 'pointer' }}
+              />
+            </Link>
           </div>
 
+          {/* Insurance Dropdown */}
           <div
-            className="nav-item position-relative"
+            className="nav-item position-relative ms-auto"
             onMouseEnter={() => handleMouseEnter('insurance')}
             onMouseLeave={handleMouseLeave}
           >
             <span className="nav-link">Insurance <span style={{ fontSize: '0.75rem' }}>▼</span></span>
             {activeDropdown === 'insurance' && (
-  <div className="dropdown-menu show">
-
-    {/* === Car Insurance (as-is) === */}
-    <div className="dropdown-item position-relative nested-dropdown">
-      <span>
-        <img alt="" src="https://www.insurancedekho.com/pwa/img/v2_icon_car.svg" width="30" height="30" />
-        Car Insurance
-        <span className="arrow-right">›</span>
-      </span>
-
-      {/* First nested menu under Car Insurance */}
-      <div className="nested-menu">
-        <div
-          className="dropdown-item position-relative nested-subdropdown"
-          onMouseEnter={() => setActiveSubmenu('car-companies')}
-          onMouseLeave={() => setActiveSubmenu(null)}
-        >
-          <span>Companies <span className="arrow-right1">›</span></span>
-
-          {activeSubmenu === 'car-companies' && (
-            <div className="nested-menu">
-              <div className="dropdown-item">ICICI ERGO Car Insurance</div>
-              <div className="dropdown-item">Digital Car Insurance</div>
-              <div className="dropdown-item">Bajaj Allianz Car Insurance</div>
-              <div className="dropdown-item">HDFC Ergo Car Insurance</div>
-            </div>
-          )}
-        </div>
-        <div className="dropdown-item">Car Insurance Quotes</div>
-        <div className="dropdown-item">Car Insurance Renewal</div>
-        <div className="dropdown-item">Premium Calculator</div>
-      </div>
-    </div>
-
-    {/* === Bike Insurance === */}
-    <div className="dropdown-item position-relative nested-dropdown">
-      <span>
-        <img alt="" src="https://www.insurancedekho.com/pwa/img/v2_icon_bike.svg" width="30" height="30" />
-        Bike Insurance
-        <span className="arrow-right">›</span>
-      </span>
-      <div className="nested-menu">
-        <div
-          className="dropdown-item position-relative nested-subdropdown"
-          onMouseEnter={() => setActiveSubmenu('bike-companies')}
-          onMouseLeave={() => setActiveSubmenu(null)}
-        >
-          <span>Companies <span className="arrow-right1">›</span></span>
-
-          {activeSubmenu === 'bike-companies' && (
-            <div className="nested-menu">
-              <div className="dropdown-item">Royal Sundaram Bike Insurance</div>
-              <div className="dropdown-item">Bajaj Allianz Bike Insurance</div>
-              <div className="dropdown-item">HDFC Ergo Bike Insurance</div>
-            </div>
-          )}
-        </div>
-        <div className="dropdown-item">Bike Insurance Quotes</div>
-        <div className="dropdown-item">Bike Insurance Renewal</div>
-        <div className="dropdown-item">Premium Calculator</div>
-      </div>
-    </div>
-
-    {/* === Health Insurance === */}
-    <div className="dropdown-item position-relative nested-dropdown">
-      <span>
-        <img alt="" src="https://static.insurancedekho.com/pwa/img/v2_icon_health.svg" width="30" height="30" />
-        HealthInsurance
-        <span className="arrow-right">›</span>
-      </span>
-      <div className="nested-menu">
-        <div
-          className="dropdown-item position-relative nested-subdropdown"
-          onMouseEnter={() => setActiveSubmenu('health-companies')}
-          onMouseLeave={() => setActiveSubmenu(null)}
-        >
-          <span>Companies <span className="arrow-right1">›</span></span>
-
-          {activeSubmenu === 'health-companies' && (
-            <div className="nested-menu">
-              <div className="dropdown-item">Niva Bupa Health Insurance</div>
-              <div className="dropdown-item">Care Health Insurance</div>
-              <div className="dropdown-item">Bajaj allianz Health Insurance</div>
-              <div className="dropdown-item">ICICI Lombard</div>
-            </div>
-          )}
-        </div>
-        <div className="dropdown-item">Best Health Insurance Plan</div>
-        <div className="dropdown-item">Women Health Insurance</div>
-        <div className="dropdown-item">Health Insurance for Family</div>
-      </div>
-    </div>
-
-    {/* === Life Insurance === */}
-    <div className="dropdown-item position-relative nested-dropdown">
-      <span>
-        <img alt="" src="https://static.insurancedekho.com/pwa/img/life_insurance.svg" width="30" height="30" />
-        Life Insurance
-        <span className="arrow-right">›</span>
-      </span>
-      <div className="nested-menu">
-        <div
-          className="dropdown-item position-relative nested-subdropdown"
-          onMouseEnter={() => setActiveSubmenu('life-companies')}
-          onMouseLeave={() => setActiveSubmenu(null)}
-        >
-          <span>Companies <span className="arrow-right1">›</span></span>
-
-          {activeSubmenu === 'life-companies' && (
-            <div className="nested-menu">
-              <div className="dropdown-item">LIC Life Insurance</div>
-              <div className="dropdown-item">HDFC Life</div>
-              <div className="dropdown-item">SBI Life</div>
-              <div className="dropdown-item">ICICI Prudential</div>
-            </div>
-          )}
-        </div>
-        <div className="dropdown-item">Life Insurance Plans</div>
-        <div className="dropdown-item">Postal Life Insurance</div>
-        <div className="dropdown-item">Life Insurance Quotes</div>
-      </div>
-    </div>
-
-    {/* === Term Insurance === */}
-    <div className="dropdown-item position-relative nested-dropdown">
-      <span>
-        <img alt="" src="https://static.insurancedekho.com/pwa/img/v2_icon_life.svg" width="30" height="30" />
-        Term Insurance
-        <span className="arrow-right">›</span>
-      </span>
-      <div className="nested-menu">
-        <div
-          className="dropdown-item position-relative nested-subdropdown"
-          onMouseEnter={() => setActiveSubmenu('term-companies')}
-          onMouseLeave={() => setActiveSubmenu(null)}
-        >
-          <span>Companies <span className="arrow-right1">›</span></span>
-
-          {activeSubmenu === 'term-companies' && (
-            <div className="nested-menu">
-              <div className="dropdown-item">LIC Term Insurance</div>
-              <div className="dropdown-item">HDFC Life Term Insurance</div>
-              <div className="dropdown-item">ICICI Term Insurance</div>
-            </div>
-          )}
-        </div>
-        <div className="dropdown-item">Term Insurnace Plan</div>
-        <div className="dropdown-item">Family Term Insurnace</div>
-        <div className="dropdown-item">Group Term Life Insurance</div>
-      </div>
-    </div>
-  </div>
-)}
-</div>
-
-
-          <div
-            className="nav-item position-relative"
-            onMouseEnter={() => handleMouseEnter('advisor')}
-            onMouseLeave={handleMouseLeave}
-          >
-            <span className="nav-link">Insurance Advisor <span style={{ fontSize: '0.75rem' }}>▼</span></span>
-            {activeDropdown === 'advisor' && (
               <div className="dropdown-menu show">
-                <div className="dropdown-item">Insurance Advisor in Pune</div>
-                <div className="dropdown-item">Insurance Advisor in Mumbai</div>
-                <div className="dropdown-item">Insurance Advisor in Bangalore</div>
+                {insuranceItems.map((item, index) => (
+                  <Link 
+                    to={item.path} 
+                    key={index} 
+                    className="dropdown-item position-relative nested-dropdown text-decoration-none"
+                  >
+                    <span>
+                      <img alt={item.title} src={item.img} width="30" height="30" />
+                      {item.title}
+                    </span>
+                  </Link>
+                ))}
               </div>
             )}
           </div>
 
-          <span className="nav-link">Renew</span>
+          {/* Insurance Advisor Link */}
+          <div
+            className="nav-item position-relative ms-auto"
+            onClick={() => navigate('/advisors')}
+            style={{ cursor: 'pointer' }}
+          >
+            <span className="nav-link">Insurance Advisor</span>
+          </div>
 
+          {/* Renew Link */}
+          <Link to="/login" className="nav-link">Renew</Link>
+
+          {/* Support Dropdown */}
           <div
             className="nav-item position-relative"
             onMouseEnter={() => handleMouseEnter('support')}
@@ -214,58 +83,65 @@ const Navbar = () => {
             <span className="nav-link">Support <span style={{ fontSize: '0.75rem' }}>▼</span></span>
             {activeDropdown === 'support' && (
               <div className="dropdown-menu show">
-
-                <div className="dropdown-item"><img alt="" src="https://static.insurancedekho.com/pwa/img/v2_icon_policyrenew.svg" width="20" height="20"></img>Renew Policy</div>
-                <div className="dropdown-item"><img alt="" src="https://static.insurancedekho.com/pwa/img/v2_icon_policyTrack.svg" width="20" height="20"></img>Track Policy</div>
-                <div className="dropdown-item"><img alt="" src="https://static.insurancedekho.com/pwa/img/v2_icon_policyDownload.svg" width="20" height="20"></img>Download Policy</div>
-                <div className="dropdown-item"><img alt="" src="https://static.insurancedekho.com/pwa/img/v2_call-green.svg" width="20" height="20"></img>Contact Us</div>
+                <Link to="/renew" className="dropdown-item text-decoration-none">
+                  <img alt="" src="https://static.insurancedekho.com/pwa/img/v2_icon_policyrenew.svg" width="20" height="20" /> Renew Policy
+                </Link>
+                <Link to="/track" className="dropdown-item text-decoration-none">
+                  <img alt="" src="https://static.insurancedekho.com/pwa/img/v2_icon_policyTrack.svg" width="20" height="20" /> Track Policy
+                </Link>
+                <Link to="/download" className="dropdown-item text-decoration-none">
+                  <img alt="" src="https://static.insurancedekho.com/pwa/img/v2_icon_policyDownload.svg" width="20" height="20" /> Download Policy
+                </Link>
+                <Link to="/contact" className="dropdown-item text-decoration-none">
+                  <img alt="" src="https://static.insurancedekho.com/pwa/img/v2_call-green.svg" width="20" height="20" /> Contact Us
+                </Link>
               </div>
             )}
           </div>
 
+          {/* News Dropdown */}
           <div
             className="nav-item position-relative"
-            onMouseEnter={() => handleMouseEnter('support')}
+            onMouseEnter={() => handleMouseEnter('news')}
             onMouseLeave={handleMouseLeave}
           >
             <span className="nav-link">News <span style={{ fontSize: '0.75rem' }}>▼</span></span>
-            {activeDropdown === 'support' && (
+            {activeDropdown === 'news' && (
               <div className="dropdown-menu show">
-                <div className="dropdown-item"> <img alt="" src="https://www.insurancedekho.com/pwa/img/v2_icon_car.svg" width="30" height="30"></img> Car Insurance</div>
-                <div className="dropdown-item"><img alt="" src="https://www.insurancedekho.com/pwa/img/v2_icon_bike.svg" width="30" height="30"></img> Bike Insurance</div>
-                <div className="dropdown-item"><img alt="" src="https://static.insurancedekho.com/pwa/img/v2_icon_health.svg" width="30" height="30"></img> Health Insurance</div>
-                <div className="dropdown-item"><img alt="" src="https://static.insurancedekho.com/pwa/img/life_insurance.svg" width="30" height="30"></img> Life Insurance</div>
-                <div className="dropdown-item"><img alt="" src="https://static.insurancedekho.com/pwa/img/v2_icon_life.svg" width="30" height="30"></img> Term Insurance</div>
+                {insuranceItems.map((item, index) => (
+                  <Link 
+                    to={`/news${item.path}`} 
+                    key={index} 
+                    className="dropdown-item text-decoration-none"
+                  >
+                    <img alt={item.title} src={item.img} width="30" height="30" /> {item.title} News
+                  </Link>
+                ))}
               </div>
             )}
           </div>
-          <span className="nav-link">Become POSP Agent</span>
+
+          {/* Become POSP Agent Link */}
+          <Link to="/become-agent" className="nav-link">Become POSP Agent</Link>
         </div>
 
-        {/* Right Side */}
+        {/* Right Side - User Section */}
         <div className="d-flex align-items-center gap-3">
-          <span className="text-primary fw-medium">Track & Policy Download</span>
+          <Link to="/track" className="text-primary fw-medium text-decoration-none">Track & Policy Download</Link>
           {user ? (
-            <div className="dropdown">
-              <button 
-                className="btn btn-outline-primary dropdown-toggle" 
-                type="button" 
+            <div className="dropdown position-relative">
+              <button
+                className="btn btn-outline-primary dropdown-toggle text-truncate"
+                type="button"
                 id="userDropdown"
                 data-bs-toggle="dropdown"
                 aria-expanded="false"
+                style={{ width: '150px', overflow: 'hidden', whiteSpace: 'nowrap' }}
+                title={user.name}
               >
-                <img 
-                  src="/pwa/img/myaccount/img_profile.svg" 
-                  alt="Profile" 
-                  width="24" 
-                  height="24" 
-                  className="me-2"
-                />
-                {user.name.split(' ')[0]} {/* Show first name */}
+                {user.name}
               </button>
               <ul className="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
-                <li><Link className="dropdown-item" to="/dashboard">Dashboard</Link></li>
-                <li><Link className="dropdown-item" to="/profile">Profile</Link></li>
                 <li><hr className="dropdown-divider" /></li>
                 <li><button className="dropdown-item" onClick={logout}>Logout</button></li>
               </ul>
@@ -280,4 +156,3 @@ const Navbar = () => {
 };
 
 export default Navbar;
-

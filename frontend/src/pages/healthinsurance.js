@@ -1,13 +1,15 @@
 
-import React, { useState } from 'react';
-import Navbar from '../components/Navbar'
+import React, { useState, useEffect } from 'react';
 import '../styles/HealthInsurance.css'
 import { Link } from 'react-router-dom';
-import { useNavigate } from 'react-router-dom'; 
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext'; 
 
 
 
 const HealthInsurance = () => {
+ const { user } = useAuth();
+
     const plans = [
         {
             name: "Care Supreme Discounted",
@@ -64,7 +66,67 @@ const HealthInsurance = () => {
         // Add more features as needed
     ];
 
+    const { currentUser } = useAuth();
+    const navigate = useNavigate();
 
+    // Initialize form data with user details if logged in
+    const [formData, setFormData] = useState({
+         name: user?.name || '',
+        mobile: user?.mobile || '',
+        gender: 'Male',
+        address: '',
+        city: '',
+        pincode: '',
+        whatsAppOptIn: true
+    });
+
+    const [errors, setErrors] = useState({});
+
+    // Auto-fill form when user is logged in
+    useEffect(() => {
+        if (currentUser) {
+            setFormData({
+                gender: currentUser.gender || 'male',
+                name: currentUser.name || '',
+                mobile: currentUser.phoneNumber || currentUser.mobile || '',
+            });
+        }
+    }, [currentUser]);
+
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        setFormData(prev => ({
+            ...prev,
+            [name]: value
+        }));
+    };
+
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        const newErrors = {};
+
+        if (!formData.name.trim()) {
+            newErrors.name = 'Name is required';
+        }
+        if (!formData.mobile.trim()) {
+            newErrors.mobile = 'Mobile number is required';
+        } else if (!/^\d{10}$/.test(formData.mobile)) {
+            newErrors.mobile = 'Invalid mobile number';
+        }
+
+        if (Object.keys(newErrors).length > 0) {
+            setErrors(newErrors);
+            return;
+        }
+
+        setErrors({});
+        navigate('/health-quote', { 
+            state: { 
+                formData,
+                user: currentUser // Pass the entire user object if needed
+            } 
+        });
+    };
 
     const members = ['You'];
     const coverageOptions = [
@@ -94,15 +156,12 @@ const HealthInsurance = () => {
     `);
     };
 
-    const navigate = useNavigate();
-
     return (
         <>
-            <Navbar />
             <div className="health-insurance-page">
                 {/* Hero Section */}
                 <section className="hero-section">
-                    <div className="container">
+                    <div className="container" style={{ maxWidth: "100%" }}>
                         <div className="hero-content">
                             <h1>Buy Health Insurance Plans and Policies Online</h1>
                             <p>A health or medical insurance policy covers your medical expenses for illnesses and injuries including hospitalisation, daycare procedures, ambulance charges, medical care at home, medicine costs, and more.</p>
@@ -134,24 +193,52 @@ const HealthInsurance = () => {
                                 <p>Buy Health Plans from <strong>Rs. 10/day*</strong></p>
                             </div>
 
-                            <form>
+                            <form onSubmit={handleSubmit}>
                                 <div className="form-group radio-group">
                                     <label>
-                                        <input type="radio" name="gender" defaultChecked />
+                                        <input
+                                            type="radio"
+                                            name="gender"
+                                            value="male"
+                                            checked={formData.gender === 'male'}
+                                            onChange={handleChange}
+                                        />
                                         <span>Male</span>
                                     </label>
                                     <label>
-                                        <input type="radio" name="gender" />
+                                        <input
+                                            type="radio"
+                                            name="gender"
+                                            value="female"
+                                            checked={formData.gender === 'female'}
+                                            onChange={handleChange}
+                                        />
                                         <span>Female</span>
                                     </label>
                                 </div>
 
                                 <div className="form-group">
-                                    <input type="text" placeholder="Name" required />
+                                    <input
+                                        type="text"
+                                        name="name"
+                                        placeholder="Name"
+                                        value={formData.name}
+                                        onChange={handleChange}
+                                        className={errors.name ? 'error-input' : ''}
+                                    />
+                                    {errors.name && <span className="error-message">{errors.name}</span>}
                                 </div>
 
                                 <div className="form-group">
-                                    <input type="tel" placeholder="Mobile Number" required />
+                                    <input
+                                        type="tel"
+                                        name="mobile"
+                                        placeholder="Mobile Number"
+                                        value={formData.mobile}
+                                        onChange={handleChange}
+                                        className={errors.mobile ? 'error-input' : ''}
+                                    />
+                                    {errors.mobile && <span className="error-message">{errors.mobile}</span>}
                                 </div>
 
                                 <button type="submit" className="submit-btn">
@@ -214,7 +301,7 @@ const HealthInsurance = () => {
                                     >
                                         Check Premium <span>→</span>
                                     </button>
-                                       
+
                                 </div>
 
                             ))}

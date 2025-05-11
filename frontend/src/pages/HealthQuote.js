@@ -1,291 +1,230 @@
-import React, { useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
+import '../styles/HealthQuote.css';
+import usePayment from '../hooks/usePayment';
 
-const diseasesList = [
-  { label: "No existing disease", value: "no_disease" },
-  { label: "Diabetes", value: "diabetes" },
-  { label: "BP/Hypertension", value: "bp_hypertension" },
-  { label: "Heart Disease", value: "heart_disease" },
-  { label: "Asthma", value: "asthma" },
-  { label: "Thyroid Disorder", value: "thyroid_disorder" },
-  { label: "Any other Disease", value: "any_other_disease" }
-];
 
-// Fetch plans from the backend API
-const fetchPlans = async (selectedDiseases) => {
-  const response = await fetch('/api/plans/fetch', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({ selectedDiseases })
-  });
-
-  if (!response.ok) {
-    throw new Error('Failed to fetch plans');
-  }
-
-  return await response.json();
-};
+const api = axios.create({
+  baseURL: 'http://localhost:4000/api',
+});
 
 const QuotePage = () => {
-  const { state } = useLocation();
+  const { initiatePayment } = usePayment();
+  const location = useLocation();
+  const formData = location.state?.formData || {};
   const navigate = useNavigate();
-  const [selectedDiseases, setSelectedDiseases] = useState([]);
   const [plans, setPlans] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [showPlans, setShowPlans] = useState(false);
+  const [error, setError] = useState('');
+  const [razorpayLoaded, setRazorpayLoaded] = useState(false);
 
-  const handleCheckboxChange = (value) => {
-    setSelectedDiseases((prev) =>
-      prev.includes(value)
-        ? prev.filter((d) => d !== value)
-        : [...prev, value]
-    );
-  };
+  // Load Razorpay script
+  useEffect(() => {
+    const loadRazorpay = async () => {
+      const loaded = await new Promise((resolve) => {
+        const script = document.createElement('script');
+        script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+        script.onload = () => resolve(true);
+        script.onerror = () => resolve(false);
+        document.body.appendChild(script);
+      });
+      setRazorpayLoaded(loaded);
+    };
 
-  const handleSubmit = async () => {
-    if (selectedDiseases.length === 0) {
-      alert("Please select at least one option");
-      return;
+    loadRazorpay();
+  }, []);
+
+  // Fetch plans
+  useEffect(() => {
+    const fetchPlans = async () => {
+      try {
+        setLoading(true);
+        setError('');
+        const response = await api.post('/insurance/get-plans', formData);
+
+        if (response.data.success) {
+          // Ensure plans have required fields
+          const validatedPlans = response.data.plans.map(plan => ({
+            ...plan,
+            _id: plan._id || plan.id,
+            price: plan.price || plan.premium // Use premium if price doesn't exist
+          }));
+          setPlans(validatedPlans);
+        } else {
+          setError(response.data.message || 'Failed to fetch plans');
+        }
+      } catch (err) {
+        console.error('Error fetching plans:', err);
+        setError(err.response?.data?.message || 'Failed to connect to server');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (Object.keys(formData).length > 0) {
+      fetchPlans();
     }
+  }, [formData]);
+
+  const handlePayment = async (plan) => {
+  if (!razorpayLoaded) {
+    alert('Payment system is still loading. Please try again in a moment.');
+    return;
+  }
+
+  if (!plan || !plan._id) {
+    console.error('Invalid plan structure:', plan);
+    alert('Invalid plan selected. Please try again.');
+    return;
+  }
+
+  try {
+    // Convert price to string if it's a number
+    const price = typeof plan.price === 'number' ? plan.price.toString() : plan.price || '0';
     
-    setLoading(true);
-    try {
-      const fetchedPlans = await fetchPlans(selectedDiseases);
-      setPlans(fetchedPlans);
-      setShowPlans(true);
-    } catch (error) {
-      console.error("Error fetching plans:", error);
-      alert("Failed to fetch plans. Please try again.");
-    } finally {
-      setLoading(false);
-    }
-  };
+    // Ensure the plan has all required fields
+    const paymentPlan = {
+      ...plan,
+      name: plan.planName || plan.name || 'Health Insurance Plan',
+      price: price, // Use the converted price
+      premium: price // Also set premium in case backend expects it
+    };
+    
+    await initiatePayment(paymentPlan, 'health');
+  } catch (error) {
+    console.error('Payment failed:', error);
+    alert(error.message || 'Payment initialization failed');
+  }
+};
 
-  const styles = {
-    container: {
-      padding: '20px',
-      maxWidth: '600px',
-      margin: '0 auto'
-    },
-    title: {
-      fontSize: '20px',
-      fontWeight: 'bold',
-      marginBottom: '20px',
-      display: 'flex',
-      alignItems: 'center'
-    },
-    backArrow: {
-      marginRight: '10px',
-      cursor: 'pointer'
-    },
-    list: {
-      listStyle: 'none',
-      padding: 0
-    },
-    card: {
-      marginBottom: '10px',
-      padding: '15px',
-      border: '1px solid #ddd',
-      borderRadius: '5px'
-    },
-    label: {
-      display: 'flex',
-      alignItems: 'center',
-      cursor: 'pointer'
-    },
-    indicator: {
-      marginLeft: '10px'
-    },
-    buttonContainer: {
-      marginTop: '20px',
-      textAlign: 'center'
-    },
-    button: {
-      padding: '10px 20px',
-      backgroundColor: '#0066cc',
-      color: 'white',
-      border: 'none',
-      borderRadius: '5px',
-      cursor: 'pointer',
-      fontSize: '16px'
-    },
-    loading: {
-      textAlign: 'center',
-      margin: '20px 0'
-    },
-    planContainer: {
-      marginTop: '30px'
-    },
-    planHeader: {
-      display: 'flex',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-      marginBottom: '15px'
-    },
-    planCard: {
-      border: '1px solid #ddd',
-      borderRadius: '8px',
-      padding: '15px',
-      marginBottom: '20px'
-    },
-    planLogo: {
-      width: '80px',
-      height: 'auto',
-      marginRight: '15px'
-    },
-    planDetails: {
-      display: 'flex',
-      marginBottom: '15px'
-    },
-    planFeatures: {
-      marginLeft: '15px'
-    },
-    featureItem: {
-      marginBottom: '8px',
-      display: 'flex',
-      alignItems: 'center'
-    },
-    premiumBox: {
-      textAlign: 'right'
-    },
-    discountBadge: {
-      backgroundColor: '#f0f8ff',
-      padding: '5px 10px',
-      borderRadius: '4px',
-      display: 'inline-flex',
-      alignItems: 'center',
-      marginBottom: '10px'
-    }
-  };
+// Update your formatCurrency function to handle numbers
+const formatCurrency = (amount) => {
+  // Convert to number if it's a string
+  const numAmount = typeof amount === 'string' ? 
+    parseFloat(amount.replace(/[^0-9.-]+/g, '')) : 
+    Number(amount);
+  
+  return new Intl.NumberFormat('en-IN', {
+    style: 'currency',
+    currency: 'INR',
+    maximumFractionDigits: 0
+  }).format(numAmount).replace('₹', '₹ ');
+};
 
   return (
-    <div className="preQhealth diseaseNew" style={styles.container}>
-      {!showPlans ? (
-        <>
-          <div className="distitle" style={styles.title}>
-            <span className="leftArrow" onClick={() => navigate(-1)} style={styles.backArrow}>
-              <img src="https://static.insurancedekho.com/pwa/img/back-arrow-new.svg" alt="Arrow" />
-            </span>
-            Does any selected member have a known disease?
+    <div className="container">
+      {loading && (
+        <div className="loading-overlay">
+          <div className="spinner-border text-primary" role="status">
+            <span className="visually-hidden">Loading...</span>
           </div>
+          <p>Finding the best health plans for you...</p>
+        </div>
+      )}
 
-          <div className="illnessgrp">
-            <div className="memberlist">
-              <ul style={styles.list}>
-                {diseasesList.map(({ label, value }) => (
-                  <li key={value} className="illcard" style={styles.card}>
-                    <label className="gs_control gs_checkbox" style={styles.label}>
-                      <input
-                        type="checkbox"
-                        name="existingDisease"
-                        value={value}
-                        checked={selectedDiseases.includes(value)}
-                        onChange={() => handleCheckboxChange(value)}
-                      />
-                      {label}
-                      <span className="gs_control__indicator" style={styles.indicator}></span>
-                    </label>
-                  </li>
-                ))}
-              </ul>
-            </div>
+      {error && (
+        <div className="alert alert-danger" role="alert">
+          {error}
+        </div>
+      )}
 
-            <div className="btnbox">
-              <div className="sticky" style={styles.buttonContainer}>
-                <button 
-                  className="button-primary large" 
-                  title="View Plans" 
-                  style={styles.button} 
-                  onClick={handleSubmit}
-                  disabled={loading}
-                >
-                  {loading ? 'Loading...' : 'View Plans'}
-                </button>
-              </div>
-            </div>
-          </div>
-        </>
-      ) : (
-        <div style={styles.planContainer}>
-          <div style={styles.planHeader}>
-            <h2>{plans.length} Plans found <span>(All prices are inclusive of GST)</span></h2>
-            <button onClick={() => setShowPlans(false)}>Back</button>
-          </div>
+      <div className="plan-header">
+        <button
+          onClick={() => navigate(-1)}
+          className="back-button"
+        >
+          &larr; Back
+        </button>
+        <h2>Available Health Insurance Plans</h2>
+        <p className="results-count">{plans.length} {plans.length === 1 ? 'Plan' : 'Plans'} Found</p>
+      </div>
 
+      {plans.length > 0 ? (
+        <div className="plans-container">
           {plans.map(plan => (
-            <div key={plan._id} style={styles.planCard}>
-              <div style={styles.planDetails}>
-                <img src={plan.logo} alt={plan.insurer} style={styles.planLogo} />
-                <div style={styles.planFeatures}>
-                  <h3>{plan.insurer}</h3>
-                  <p>{plan.planName}</p>
-                  
-                  <div style={{ display: 'flex', margin: '10px 0' }}>
-                    <div style={{ marginRight: '20px' }}>
-                      <p>Cashless Hospitals</p>
-                      <h4>{plan.cashlessHospitals}</h4>
-                    </div>
-                    <div style={{ marginRight: '20px' }}>
-                      <p>Claim Settled</p>
-                      <h4>{plan.claimSettled}</h4>
-                    </div>
-                    <div>
-                      <p>Cover Amount</p>
-                      <h4>{plan.coverAmount}</h4>
-                    </div>
-                  </div>
-                  
-                  <div>
-                    {plan.features.map((feature, index) => (
-                      <div key={index} style={styles.featureItem}>
-                        <img 
-                          src="https://static.insurancedekho.com/pwa/img/check-green.svg" 
-                          width="16px" 
-                          height="16px" 
-                          alt="Check" 
-                          style={{ marginRight: '5px' }}
-                        />
-                        <p>{feature}</p>
-                      </div>
-                    ))}
-                  </div>
-                  
-                  {plan.addons > 0 && (
-                    <div style={{ marginTop: '10px' }}>
-                      <p>Maximize Your Benefits</p>
-                      <a href="#">{plan.addons} Add-ons</a>
-                    </div>
-                  )}
+            <div key={plan._id} className="plan-card">
+              <div className="plan-card-header">
+                <img
+                  src={plan.logo?.startsWith('http') ? plan.logo : `https://via.placeholder.com/80?text=Logo`}
+                  alt={plan.insurerName || 'Insurance Logo'}
+                  className="plan-logo"
+                  onError={(e) => {
+                    e.target.onerror = null;
+                    e.target.src = 'https://via.placeholder.com/80?text=No+Image';
+                  }}
+                />
+
+                <div className="plan-title">
+                  <h3>{plan.insurerName}</h3>
+                  <h4>{plan.planName}</h4>
                 </div>
-                
-                <div style={styles.premiumBox}>
-                  {plan.discount && (
-                    <div style={styles.discountBadge}>
-                      <img 
-                        src="https://static.insurancedekho.com/pwa/img/discount-nudge.svg" 
-                        alt="Discount" 
-                        style={{ marginRight: '5px' }}
-                      />
-                      Inc. {plan.discount}
-                    </div>
-                  )}
-                  <button style={{ 
-                    backgroundColor: '#f5f5f5', 
-                    border: '1px solid #ddd',
-                    padding: '10px 15px',
-                    borderRadius: '5px',
-                    fontWeight: 'bold'
-                  }}>
-                    {plan.monthlyPremium}<span>/Month</span>
-                  </button>
-                  <p>{plan.yearlyPremium}/Yr</p>
+              </div>
+
+              <div className="plan-features">
+                <div className="feature-highlight">
+                  <span>Cover Amount:</span>
+                  <strong>{plan.coverAmount}</strong>
+                </div>
+                <div className="feature-highlight">
+                  <span>Cashless Hospitals:</span>
+                  <strong>{plan.cashlessHospitals.toLocaleString()}+</strong>
+                </div>
+                <div className="feature-highlight">
+                  <span>Claim Settlement:</span>
+                  <strong>{plan.claimSettled}</strong>
+                </div>
+
+                <ul className="feature-list">
+                  {plan.keyFeatures.map((feature, index) => (
+                    <li key={index}>{feature}</li>
+                  ))}
+                </ul>
+              </div>
+
+              <div className="plan-footer">
+                <div className="plan-price">
+                  <div className="price-label">Annual Premium</div>
+                  <div className="price-amount">{formatCurrency(plan.premium)}</div>
+                </div>
+
+                <div className="plan-actions">
+                 <button
+                        onClick={() => handlePayment(plan)}
+                        disabled={loading}
+                        className="check-price-btn"
+                      >
+                        {loading ? (
+                          <>
+                            <span className="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                            Processing...
+                          </>
+                        ) : 'Buy Now'}
+                      </button>
                 </div>
               </div>
             </div>
           ))}
         </div>
+      ) : (
+        !loading && (
+          <div className="no-plans">
+            <img
+              src="https://cdn-icons-png.flaticon.com/512/4076/4076478.png"
+              alt="No plans found"
+              className="no-plans-image"
+            />
+            <h3>No health insurance plans found</h3>
+            <p>We couldn't find any plans matching your criteria.</p>
+            <button
+              onClick={() => navigate(-1)}
+              className="btn-try-again"
+            >
+              Try Different Options
+            </button>
+          </div>
+        )
       )}
     </div>
   );

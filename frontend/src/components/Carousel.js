@@ -3,7 +3,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 
 const CarouselComponent = () => {
   return (
-    <div className="container mt-4 d-flex justify-content-center">
+    <div className="container mt-2 d-flex justify-content-center" style={{maxWidth:"100%"}}>
       <div
         id="homeCarousel"
         className="carousel slide mb-4"

@@ -6,9 +6,20 @@
 /* Shared Styles */
 .container {
     width: 90%;
-    max-width: 1200px;
+    max-width: 100px;
     margin: 0 auto;
-    padding: 20px 0;
+  
+}
+
+.error-input {
+  border-color: #ff0000 !important;
+}
+
+.error-message {
+  color: #ff0000;
+  font-size: 12px;
+  margin-top: 5px;
+  display: block;
 }
 
 h1,
@@ -41,7 +52,7 @@ h3 {
   }
 
   .quote-form {
-    width: 350px;
+
     background: white;
     border-radius: 10px;
     box-shadow: 0 4px 6px rgba(0,0,0,0.1);
@@ -122,6 +133,7 @@ h3 {
   flex-wrap: wrap;
   margin: 1rem 0;
 }
+
 
 .member-tag {
   padding: 0.5rem 1rem;

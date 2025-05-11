@@ -1,16 +1,55 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 
 const PremiumDetails = () => {
-  const { state } = useLocation();
+    const { user } = useAuth();
+  const location = useLocation();
   const navigate = useNavigate();
+  const { currentUser } = useAuth();
+  
+  const plan = location.state?.plan;
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
   const [gender, setGender] = useState('Male');
   const [formData, setFormData] = useState({
-    name: '',
-    mobile: '',
-    whatsAppOptIn: true,
+    name: user?.name || '',
+        mobile: user?.mobile || '',
+        gender: 'Male',
+        address: '',
+        city: '',
+        pincode: '',
+        whatsAppOptIn: true
   });
+
+  // Auto-fill form when user is logged in
+  useEffect(() => {
+    try {
+      console.log('Current User Data:', currentUser); // Debugging log
+      
+      if (currentUser) {
+        // Check if currentUser has the expected properties
+        const userData = {
+          name: currentUser.displayName || currentUser.name || '',
+          mobile: currentUser.phoneNumber || currentUser.mobile || '',
+          whatsAppOptIn: currentUser.whatsAppOptIn !== false
+        };
+
+        console.log('Setting form data:', userData); // Debugging log
+        setFormData(userData);
+
+        if (currentUser.gender) {
+          setGender(currentUser.gender);
+        }
+      }
+    } catch (err) {
+      console.error('Error setting user data:', err);
+      setError('Failed to load user data');
+    } finally {
+      setLoading(false);
+    }
+  }, [currentUser]);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -22,33 +61,41 @@ const PremiumDetails = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-
     const { name, mobile } = formData;
 
-    // Basic validation
-    if (!name.trim() || !mobile.trim() || mobile.length !== 10 || isNaN(mobile)) {
-      alert('Please enter a valid name and 10-digit mobile number.');
+    if (!name.trim()) {
+      setError('Please enter your name');
       return;
     }
 
-    console.log('Form submitted:', formData);
-    navigate('/health-quote');
+    if (!mobile.trim() || mobile.length !== 10 || isNaN(mobile)) {
+      setError('Please enter a valid 10-digit mobile number');
+      return;
+    }
+
+    setError('');
+    navigate('/health-quote', { state: { plan, formData: { ...formData, gender } } });
   };
 
-  if (!state?.plan) {
+  if (loading) {
+    return <div style={styles.loading}>Loading user data...</div>;
+  }
+
+  if (!plan) {
     return (
-      <div>
+      <div style={styles.errorContainer}>
         <p>
           No plan data available. Go back to{' '}
-          <span onClick={() => navigate(-1)} style={{ color: 'blue', cursor: 'pointer' }}>
+          <span 
+            onClick={() => navigate('/health-insurance')} 
+            style={styles.linkText}
+          >
             plans
           </span>.
         </p>
       </div>
     );
   }
-
-  const { plan } = state;
 
   return (
     <div style={styles.container}>
@@ -62,6 +109,18 @@ const PremiumDetails = () => {
 
       <div style={styles.content}>
         <h2 style={styles.title}>Save upto ₹75000* of Tax Benefits u/s 80D</h2>
+
+        {error && (
+          <div style={styles.errorAlert}>
+            {error}
+          </div>
+        )}
+
+        {currentUser && (
+          <div style={styles.userInfo}>
+            <p style={styles.userInfoText}>Logged in as: {currentUser.email}</p>
+          </div>
+        )}
 
         <form onSubmit={handleSubmit} style={styles.form}>
           <div style={styles.genderSelector}>
@@ -101,9 +160,18 @@ const PremiumDetails = () => {
               value={formData.mobile}
               onChange={handleChange}
               maxLength="10"
-              style={styles.input}
+              style={{
+                ...styles.input,
+                ...(currentUser?.phoneNumber && styles.disabledInput)
+              }}
               required
+              disabled={!!currentUser?.phoneNumber}
             />
+            {currentUser?.phoneNumber && (
+              <small style={styles.editHint}>
+                Contact support to update your mobile number
+              </small>
+            )}
           </div>
 
           <div style={styles.checkboxGroup}>
@@ -144,6 +212,7 @@ const PremiumDetails = () => {
   );
 };
 
+// Updated styles
 const styles = {
   container: {
     position: 'relative',
@@ -261,6 +330,40 @@ const styles = {
     textDecoration: 'none',
     marginLeft: '4px',
   },
+  loading: {
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    height: '100vh',
+    fontSize: '18px',
+  },
+  errorContainer: {
+    padding: '20px',
+    textAlign: 'center',
+    marginTop: '50px',
+  },
+  linkText: {
+    color: '#2a7fba',
+    cursor: 'pointer',
+    textDecoration: 'underline',
+  },
+  userInfo: {
+    backgroundColor: '#f0f8ff',
+    padding: '10px',
+    borderRadius: '5px',
+    marginBottom: '15px',
+    textAlign: 'center',
+  },
+  userInfoText: {
+    margin: 0,
+    color: '#2a7fba',
+    fontSize: '14px',
+  },
+  editHint: {
+    color: '#666',
+    fontSize: '12px',
+    marginTop: '5px',
+  }
 };
 
 export default PremiumDetails;

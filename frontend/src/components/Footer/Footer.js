@@ -6,7 +6,7 @@ import FooterStats from './FooterStats';
 
 const Footer = () => {
   return (
-    <footer className="footer-container">
+    <footer className="footer-container" style={{maxWidth:"100%"}}>
       <div className="footer-row">
         <div className="footer-brand-section">
           <div className="footer-logo">

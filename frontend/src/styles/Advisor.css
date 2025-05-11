@@ -1,0 +1,91 @@
+/* AdvisorsPage.css */
+
+.advisors-page {
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* Filter Card */
+.filter-card {
+  background-color: #f8f9fa;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  margin-bottom: 25px;
+}
+
+/* Advisor Cards */
+.advisor-card {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  border-radius: 10px;
+  overflow: hidden;
+  height: 100%;
+}
+
+.advisor-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}
+
+.advisor-card img {
+  border: 3px solid #fff;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+/* Badge */
+.status-badge {
+  font-size: 0.8rem;
+  padding: 5px 10px;
+}
+
+/* Modal Styling */
+.booking-modal .modal-header {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.booking-modal .modal-title {
+  color: #2c3e50;
+  font-weight: 600;
+}
+
+/* Gender Selection Buttons */
+.gender-btn {
+  width: 120px;
+  padding: 8px;
+  font-weight: 500;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+  .advisor-card {
+    margin-bottom: 20px;
+  }
+  
+  .filter-section .col-md-4, 
+  .filter-section .col-md-3 {
+    margin-bottom: 15px;
+  }
+}
+
+/* Form Elements */
+.form-control, .form-select {
+  border-radius: 8px;
+  padding: 10px 15px;
+}
+
+.form-control:focus, .form-select:focus {
+  border-color: #4a90e2;
+  box-shadow: 0 0 0 0.25rem rgba(74, 144, 226, 0.25);
+}
+
+/* WhatsApp Checkbox */
+.whatsapp-checkbox {
+  display: flex;
+  align-items: center;
+}
+
+.whatsapp-checkbox img {
+  margin-left: 8px;
+  height: 20px;
+}
