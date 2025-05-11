@@ -1,7 +1,28 @@
 const User = require('../models/User');
+const Admin = require('../models/Admin');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const nodemailer = require('nodemailer');
+const validator = require('validator');
+
+
+const generateAuthResponse = (user, isAdmin = false) => {
+  const token = jwt.sign(
+    { id: user._id, isAdmin }, // Ensure isAdmin is included here
+    process.env.JWT_SECRET,
+    { expiresIn: '30d' }
+  );
+
+  return {
+    token,
+    user: {
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      isAdmin: isAdmin || user.isAdmin
+    }
+  };
+};
 
 exports.register = async (req, res) => {
   try {
@@ -27,21 +48,22 @@ exports.register = async (req, res) => {
     }
 
     // Hash password
+    const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, 10);
 
     // Create user
-    const user = await User.create({ 
-      name, 
-      email, 
-      password: hashedPassword 
+    const user = await User.create({ name, email, password });  
+
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: "1d" });
+
+    res.status(201).json({
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      token
     });
 
-    // Generate token
-    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { 
-      expiresIn: '1d' 
-    });
-
-    res.status(201).json({ token, user });
+    res.status(201).json(generateAuthResponse(user));
   } catch (error) {
     console.error('Registration error:', error);
     res.status(500).json({ message: 'Server error' });
@@ -50,35 +72,75 @@ exports.register = async (req, res) => {
 
 exports.login = async (req, res) => {
   const { email, password } = req.body;
-  const user = await User.findOne({ email });
-  if (!user) return res.status(400).json({ message: 'Invalid credentials' });
 
-  const isMatch = await bcrypt.compare(password, user.password);
-  if (!isMatch) return res.status(400).json({ message: 'Invalid credentials' });
+  try {
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(400).json({ message: 'Invalid email or password' });
+    }
 
-  const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '1d' });
-  res.json({ token, user });
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(400).json({ message: 'Invalid email or password' });
+    }
+
+    // ✅ Generate JWT
+    const token = jwt.sign(
+      { id: user._id, email: user.email },
+      process.env.JWT_SECRET,
+      { expiresIn: '1h' }
+    );
+
+    // ✅ Respond with token and user
+    res.json({
+      token,
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email
+      }
+    });
+  } catch (err) {
+    console.error('Login error:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
 };
+;
+
 
 exports.profile = async (req, res) => {
   try {
-    const updatedUser = await User.findByIdAndUpdate(
-      req.user._id,
-      {
-        $set: {
-          name: req.body.name,
-          gender: req.body.gender,
-          dob: req.body.dob,
-          mobile: req.body.mobile
-        }
-      },
-      { new: true, runValidators: true }
-    ).select('-password');
+    if (!req.user) {
+      return res.status(401).json({ message: 'Not authorized' });
+    }
 
-    res.json({ user: updatedUser });
+    const user = await User.findById(req.user.id).select('-password');
+    res.json({ user });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ message: 'Failed to update profile' });
+    res.status(500).json({ message: 'Failed to fetch profile' });
+  }
+};
+
+exports.updateProfile = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id);
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    user.name = req.body.name || user.name;
+    user.gender = req.body.gender || user.gender;
+    user.dob = req.body.dob || user.dob;
+    user.mobile = req.body.mobile || user.mobile;
+
+    await user.save();
+
+    res.json({ message: 'Profile updated successfully', user });
+  } catch (error) {
+    console.error('Update profile error:', error);
+    res.status(500).json({ message: 'Server error' });
   }
 };
 
@@ -145,3 +207,6 @@ exports.profile = async (req, res) => {
       res.status(400).json({ message: 'Invalid or expired token' });
     }
   }
+
+
+  

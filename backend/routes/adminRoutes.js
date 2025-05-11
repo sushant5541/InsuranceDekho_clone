@@ -1,29 +1,14 @@
 const express = require('express');
 const router = express.Router();
-const adminController = require('../controllers/adminController');
+const { authAdmin } = require('../controllers/adminController');
+const { protect, admin } = require('../middleware/adminMiddleware');
 
-const { isAdmin } = require('../middleware/adminMiddleware');
+// Public route
+router.post('/login', authAdmin);
 
-// Admin login
-router.post('/login', adminController.loginAdmin);
+// Protected routes
+router.get('/profile', protect, admin, (req, res) => {
+  res.json(req.admin);
+});
 
-// Admin logout
-router.post('/logout', adminController.logoutAdmin);
-
-// Admin profile
-router.get('/profile', isAdmin, adminController.getAdminProfile);
-
-// ------- Category Routes -------
-router.post('/categories', adminController.createCategory);
-router.put('/categories/:categoryId', adminController.updateCategory);
-router.delete('/categories/:categoryId', adminController.deleteCategory);
-
-// ------- Product Routes -------
-router.post('/products', adminController.createProduct);
-router.put('/products/:productId', adminController.updateProduct);
-router.delete('/products/:productId', adminController.deleteProduct);
-
-// ------- User Management Routes -------
-router.get('/users', adminController.getAllUsers);
-router.put('/users/block/:userId', adminController.toggleBlockUser);
 module.exports = router;

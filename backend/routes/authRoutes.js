@@ -1,14 +1,25 @@
 const express = require('express');
 const router = express.Router();
-const { register, login, forgotPassword, profile } = require('../controllers/authController');
-const protect = require('../middleware/auth');
+const { register, login, forgotPassword, profile, updateProfile } = require('../controllers/authController');
+const { protect } = require('../middleware/auth');
 
 router.post('/register', register);
 router.post('/login', login);
 router.post('/forgotPassword', forgotPassword);
-router.put('/profile', protect,profile) 
+router.get('/profile', protect, profile) 
+router.put('/profile', protect, updateProfile);
 
 const bcrypt = require('bcryptjs');
+
+router.get('/verify-admin', protect, async (req, res) => {
+  try {
+    const admin = await Admin.findById(req.user.id);
+    res.json({ isAdmin: !!admin });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
 
 router.post('/reset-password/:token', async (req, res) => {
   const { token } = req.params;
@@ -44,6 +55,16 @@ router.get('/verify-reset-token/:token', (req, res) => {
   }
 });
 
+router.get('/me', protect, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id).select('-password');
+    res.json({ user });
+  } catch (err) {
+    res.status(500).json({ message: 'Failed to fetch user data' });
+  }
+});
+
+module.exports = router;
 
 
 
