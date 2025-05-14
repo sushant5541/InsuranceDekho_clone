@@ -1,0 +1,130 @@
+.health-insurance-news {
+  font-family: Arial, sans-serif;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.breadcrumb {
+  margin-bottom: 20px;
+  font-size: 14px;
+}
+
+.breadcrumb span {
+  margin: 0 5px;
+}
+
+.breadcrumb span:not(:last-child)::after {
+  content: ">";
+  margin-left: 5px;
+}
+
+.breadcrumb a {
+  color: #0066cc;
+  text-decoration: none;
+}
+
+.news-heading {
+  font-size: 28px;
+  margin-bottom: 30px;
+  color: #333;
+}
+
+.news-list {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+}
+
+.news-card {
+  display: flex;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.news-image-container {
+  flex: 0 0 35%;
+  max-width: 35%;
+}
+
+.news-image {
+  width: 100%;
+  height: auto;
+  display: block;
+  transition: transform 0.3s ease;
+}
+
+.news-image:hover {
+  transform: scale(1.03);
+}
+
+.news-content {
+  flex: 1;
+  padding: 20px;
+}
+
+.news-content h2 {
+  font-size: 20px;
+  margin: 0 0 15px 0;
+}
+
+.news-content h2 a {
+  color: #333;
+  text-decoration: none;
+}
+
+.news-content h2 a:hover {
+  color: #0066cc;
+}
+
+.news-excerpt {
+  color: #666;
+  line-height: 1.5;
+  margin-bottom: 15px;
+}
+
+.author-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.author-initial {
+  width: 32px;
+  height: 32px;
+  background-color: #f0f0f0;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+}
+
+.author-details {
+  display: flex;
+  flex-direction: column;
+}
+
+.author-name a {
+  color: #0066cc;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+.article-date {
+  color: #888;
+  font-size: 14px;
+}
+
+@media (max-width: 768px) {
+  .news-card {
+    flex-direction: column;
+  }
+  
+  .news-image-container {
+    flex: 0 0 100%;
+    max-width: 100%;
+  }
+}

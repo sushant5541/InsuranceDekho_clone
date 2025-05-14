@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 
 const usePayment = () => {
-  const { user, logout } = useAuth();
+  const { user, logout } = useAuth(); // 'user' is now used in the prefill section
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -35,18 +35,18 @@ const usePayment = () => {
       }
 
       // 2. Create payment order
-      const response = await fetch('http://localhost:4000/api/payments/create-order', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          amount: parseInt((plan.price || '0').replace(/\D/g, '')),
-          planId: plan._id || plan.id,
-          planType: planType.toLowerCase(),
-        }),
-      });
+          const response = await fetch('http://localhost:4000/api/payments/create-order', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        amount: parseInt((plan.price || '0').replace(/\D/g, '')),
+        planId: plan._id || plan.id,
+        planType: planType.toLowerCase(),
+      }),
+    });
 
       if (response.status === 401) {
         logout();
@@ -62,29 +62,29 @@ const usePayment = () => {
       const { order } = await response.json();
 
       // 3. Initialize Razorpay payment
-      const rzp = new window.Razorpay({
+      const options = {
         key: 'rzp_test_enSNChz4e2UlQM', // Replace with your actual key
         amount: order.amount,
         currency: order.currency || 'INR',
         name: `${planType} Insurance`,
         description: `Payment for ${plan.name}`,
         order_id: order.id,
-        handler: async function (response) { // Fixed: Properly define 'response' parameter
+        handler: async function (response) {
           try {
-            const verification = await fetch('http://localhost:4000/api/payments/verify', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`,
-              },
-              body: JSON.stringify({
-                razorpay_payment_id: response.razorpay_payment_id,
-                razorpay_order_id: response.razorpay_order_id,
-                razorpay_signature: response.razorpay_signature,
-                planId: plan._id || plan.id,
-              }),
-            });
-
+             const verification = await fetch('http://localhost:4000/api/payments/verify', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        razorpay_payment_id: response.razorpay_payment_id,
+        razorpay_order_id: response.razorpay_order_id,
+        razorpay_signature: response.razorpay_signature,
+        planId: plan._id || plan.id,
+        planType: planType.toLowerCase(),
+      }),
+    });
             const { success, message } = await verification.json();
             alert(success ? 'Payment successful!' : message || 'Payment verification failed');
           } catch (err) {
@@ -100,8 +100,9 @@ const usePayment = () => {
         theme: {
           color: '#3399cc',
         },
-      });
+      };
 
+      const rzp = new window.Razorpay(options); // Define rzp here
       rzp.open();
     } catch (error) {
       setError(error.message);

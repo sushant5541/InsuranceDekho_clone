@@ -98,6 +98,7 @@ const HomePage = () => {
 </div>
 
 <InsurancePartners />
+<Footer/>
     </div>
 
     

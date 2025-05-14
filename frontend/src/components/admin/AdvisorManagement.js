@@ -3,11 +3,6 @@ import { Table, Button, Modal, Form, Spinner, Alert, Badge } from 'react-bootstr
 import axios from 'axios';
 import { useAuth } from '../../context/AuthContext';
 
-// Create axios instance with base URL
-const api = axios.create({
-  baseURL: 'http://localhost:4000/api',
-});
-
 const AdvisorManagement = () => {
   const { user } = useAuth();
   const [advisors, setAdvisors] = useState([]);
@@ -15,7 +10,8 @@ const AdvisorManagement = () => {
   const [error, setError] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [currentAdvisor, setCurrentAdvisor] = useState(null);
-  const [formData, setFormData] = useState({
+  
+  const initialFormData = {
     name: '',
     email: '',
     phone: '',
@@ -24,41 +20,36 @@ const AdvisorManagement = () => {
     yearsOfExperience: '',
     profilePhoto: '',
     isActive: true
-  });
+  };
+  
+  const [formData, setFormData] = useState(initialFormData);
 
-  // Add request interceptor to include token
-  api.interceptors.request.use(config => {
-  if (user?.token) {
-    config.headers.Authorization = `Bearer ${user.token}`;
-    console.log('Token added to headers:', config.headers.Authorization); // Debug log
-  }
-  return config;
-}, error => {
-  console.error('Interceptor error:', error);
-  return Promise.reject(error);
-});
+  // Create axios instance with auth token
+  const api = axios.create({
+    baseURL: 'http://localhost:4000/api',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${user?.token}` // Include token in default headers
+    }
+  });
 
   useEffect(() => {
     const fetchAdvisors = async () => {
       try {
-        const res = await api.get('/advisors');
-        setAdvisors(res.data);
+        const { data } = await api.get('/advisors');
+        setAdvisors(data);
       } catch (err) {
         setError(err.response?.data?.message || 'Failed to fetch advisors');
-        if (err.response?.status === 401) {
-          // Handle unauthorized error
-          console.error('Authentication error:', err);
-        }
       } finally {
         setLoading(false);
       }
     };
     fetchAdvisors();
-  }, [user?.token]);
+  }, [user?.token]); // Add dependency on user.token
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
+    setFormData(prev => ({ ...prev, [name]: value }));
   };
 
   const handleEditClick = (advisor) => {
@@ -70,7 +61,7 @@ const AdvisorManagement = () => {
       specialization: advisor.specialization,
       City: advisor.City,
       yearsOfExperience: advisor.yearsOfExperience,
-      profilePhoto: advisor.profilePhoto,
+      profilePhoto: advisor.profilePhoto || '',
       isActive: advisor.isActive
     });
     setShowModal(true);
@@ -79,52 +70,45 @@ const AdvisorManagement = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
+      // Validate required fields
+      if (!formData.name || !formData.email || !formData.phone || 
+          !formData.specialization || !formData.City || !formData.yearsOfExperience) {
+        throw new Error('Please fill all required fields');
+      }
+
       if (currentAdvisor) {
         // Update existing advisor
-        const res = await api.put(`/advisors/${currentAdvisor._id}`, formData);
-        setAdvisors(advisors.map(a => a._id === currentAdvisor._id ? res.data : a));
+        const { data } = await api.put(`/advisors/${currentAdvisor._id}`, formData);
+        setAdvisors(advisors.map(a => a._id === data._id ? data : a));
       } else {
         // Create new advisor
-        const res = await api.post('/advisors', formData);
-        setAdvisors([...advisors, res.data]);
+        const { data } = await api.post('/advisors', {
+          ...formData,
+          profilePhoto: formData.profilePhoto || 'https://randomuser.me/api/portraits/lego/1.jpg'
+        });
+        setAdvisors([...advisors, data]);
       }
+      
       setShowModal(false);
       setError('');
     } catch (err) {
-      setError(err.response?.data?.message || 'Operation failed');
-      if (err.response?.status === 401) {
-        console.error('Authentication error during operation:', err);
-      }
+      setError(err.response?.data?.message || err.message || 'Operation failed');
+      console.error('Operation error:', err);
     }
   };
 
-
- const handleDelete = async (id) => {
-  if (window.confirm('Are you sure you want to delete this advisor?')) {
-    try {
-      // Debug: Check user and token before request
-      console.log('Current user:', user);
-      console.log('Token:', user?.token);
-      
-      // Explicitly set headers for DELETE request
-      const config = {
-        headers: {
-          Authorization: `Bearer ${user?.token}`,
-          'Content-Type': 'application/json'
-        }
-      };
-      
-      const response = await api.delete(`/advisors/${id}`, config);
-      console.log('Delete response:', response);
-      
-      setAdvisors(advisors.filter(a => a._id !== id));
-    } catch (err) {
-      console.error('Full error object:', err);
-      console.error('Error response:', err.response?.data);
-      setError(err.response?.data?.message || 'Failed to delete advisor');
+  const handleDelete = async (id) => {
+    if (window.confirm('Are you sure you want to delete this advisor?')) {
+      try {
+        await api.delete(`/advisors/${id}`);
+        setAdvisors(advisors.filter(a => a._id !== id));
+        setError('');
+      } catch (err) {
+        setError(err.response?.data?.message || 'Failed to delete advisor');
+        console.error('Delete error:', err);
+      }
     }
-  }
-};
+  };
 
   if (loading) return <Spinner animation="border" />;
 
@@ -133,33 +117,17 @@ const AdvisorManagement = () => {
       <div className="d-flex justify-content-between align-items-center mb-4">
         <h2>Advisor Management</h2>
         {user?.isAdmin && (
-          <Button 
-            variant="primary" 
-            onClick={() => {
-              setCurrentAdvisor(null);
-              setFormData({
-                name: '',
-                email: '',
-                phone: '',
-                specialization: '',
-                City: '',
-                yearsOfExperience: '',
-                profilePhoto: '',
-                isActive: true
-              });
-              setShowModal(true);
-            }}
-          >
+          <Button variant="primary" onClick={() => {
+            setCurrentAdvisor(null);
+            setFormData(initialFormData);
+            setShowModal(true);
+          }}>
             Add New Advisor
           </Button>
         )}
       </div>
 
-      {error && (
-        <Alert variant="danger" onClose={() => setError('')} dismissible>
-          {error}
-        </Alert>
-      )}
+      {error && <Alert variant="danger" onClose={() => setError('')} dismissible>{error}</Alert>}
 
       <Table striped bordered hover responsive>
         <thead>
@@ -218,7 +186,6 @@ const AdvisorManagement = () => {
         </tbody>
       </Table>
 
-      {/* Advisor Form Modal */}
       <Modal show={showModal} onHide={() => setShowModal(false)}>
         <Modal.Header closeButton>
           <Modal.Title>{currentAdvisor ? 'Edit Advisor' : 'Add New Advisor'}</Modal.Title>

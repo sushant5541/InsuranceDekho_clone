@@ -50,7 +50,6 @@ ReactDOM.createRoot(document.getElementById('root')).render(
         <Navbar/>
        
         <App />
-         <Footer/>
       </AuthProvider>
     </React.StrictMode>
   </Router>

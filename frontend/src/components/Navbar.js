@@ -17,7 +17,7 @@ const Navbar = () => {
   const insuranceItems = [
     { title: "Car Insurance", img: "https://www.insurancedekho.com/pwa/img/v2_icon_car.svg", path: "/car-insurance" },
     { title: "Bike Insurance", img: "https://www.insurancedekho.com/pwa/img/v2_icon_bike.svg", path: "/bike-insurance" },
-    { title: "Health Insurance", img: "https://static.insurancedekho.com/pwa/img/v2_icon_health.svg", path: "/Health-insurance" },
+    { title: "Health Insurance", img: "https://static.insurancedekho.com/pwa/img/v2_icon_health.svg", path: "/health-insurance" },
     { title: "Life Insurance", img: "https://static.insurancedekho.com/pwa/img/life_insurance.svg", path: "/life-insurance" },
     { title: "Term Insurance", img: "https://static.insurancedekho.com/pwa/img/v2_icon_life.svg", path: "/term-insurance" },
   ];
@@ -47,9 +47,9 @@ const Navbar = () => {
             {activeDropdown === 'insurance' && (
               <div className="dropdown-menu show">
                 {insuranceItems.map((item, index) => (
-                  <Link 
-                    to={item.path} 
-                    key={index} 
+                  <Link
+                    to={item.path}
+                    key={index}
                     className="dropdown-item position-relative nested-dropdown text-decoration-none"
                   >
                     <span>
@@ -83,13 +83,18 @@ const Navbar = () => {
             <span className="nav-link">Support <span style={{ fontSize: '0.75rem' }}>▼</span></span>
             {activeDropdown === 'support' && (
               <div className="dropdown-menu show">
-                <Link to="/renew" className="dropdown-item text-decoration-none">
+                <Link to="/dashboard" className="dropdown-item text-decoration-none">
                   <img alt="" src="https://static.insurancedekho.com/pwa/img/v2_icon_policyrenew.svg" width="20" height="20" /> Renew Policy
                 </Link>
-                <Link to="/track" className="dropdown-item text-decoration-none">
+                <Link to="/dashboard"  className="dropdown-item text-decoration-none">
                   <img alt="" src="https://static.insurancedekho.com/pwa/img/v2_icon_policyTrack.svg" width="20" height="20" /> Track Policy
                 </Link>
-                <Link to="/download" className="dropdown-item text-decoration-none">
+                <Link to="/dashboard" onClick={(e) => {
+              if (user) {
+                e.preventDefault();
+                navigate('/dashboard', { state: { autoPrint: true } });
+              }
+            }}className="dropdown-item text-decoration-none">
                   <img alt="" src="https://static.insurancedekho.com/pwa/img/v2_icon_policyDownload.svg" width="20" height="20" /> Download Policy
                 </Link>
                 <Link to="/contact" className="dropdown-item text-decoration-none">
@@ -109,9 +114,9 @@ const Navbar = () => {
             {activeDropdown === 'news' && (
               <div className="dropdown-menu show">
                 {insuranceItems.map((item, index) => (
-                  <Link 
-                    to={`/news${item.path}`} 
-                    key={index} 
+                  <Link
+                    to={`${item.path}/news`}  // Updated path to include /news
+                    key={index}
                     className="dropdown-item text-decoration-none"
                   >
                     <img alt={item.title} src={item.img} width="30" height="30" /> {item.title} News
@@ -127,7 +132,18 @@ const Navbar = () => {
 
         {/* Right Side - User Section */}
         <div className="d-flex align-items-center gap-3">
-          <Link to="/track" className="text-primary fw-medium text-decoration-none">Track & Policy Download</Link>
+          <Link
+            to="/dashboard"
+            className="text-primary fw-medium text-decoration-none"
+            onClick={(e) => {
+              if (user) {
+                e.preventDefault();
+                navigate('/dashboard', { state: { autoPrint: true } });
+              }
+            }}
+          >
+            Track & Policy Download
+          </Link>
           {user ? (
             <div className="dropdown position-relative">
               <button
@@ -142,6 +158,12 @@ const Navbar = () => {
                 {user.name}
               </button>
               <ul className="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                {/* Dashboard link based on user role */}
+                {user.role === 'admin' ? (
+                  <li><Link to="/dashboard" className="dropdown-item"> Dashboard</Link></li>
+                ) : (
+                  <li><Link to="/dashboard" className="dropdown-item"> Dashboard</Link></li>
+                )}
                 <li><hr className="dropdown-divider" /></li>
                 <li><button className="dropdown-item" onClick={logout}>Logout</button></li>
               </ul>

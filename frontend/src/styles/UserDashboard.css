@@ -96,6 +96,40 @@
     padding: 10px 25px;
     font-weight: 500;
   }
+
+  .policy-card {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 20px;
+  background: white;
+}
+
+.policy-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 10px;
+}
+
+.policy-info {
+  margin: 15px 0;
+  padding: 15px;
+  background: #f9f9f9;
+  border-radius: 5px;
+}
+
+.policy-info p {
+  margin: 5px 0;
+}
+
+.policy-meta {
+  font-size: 0.9em;
+  color: #666;
+  margin-top: 15px;
+}
   
   /* Responsive */
   @media (max-width: 768px) {
