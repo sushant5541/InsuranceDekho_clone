@@ -1,89 +1,112 @@
-const asyncHandler = require('express-async-handler');
 const Policy = require('../models/Policy');
 
 // @desc    Get all policies
 // @route   GET /api/policies
 // @access  Private/Admin
-const getPolicies = asyncHandler(async (req, res) => {
-  const policies = await Policy.find({});
-  res.json(policies);
-});
+const getPolicies = async (req, res) => {
+  try {
+    const policies = await Policy.find({});
+    res.json(policies);
+  } catch (error) {
+    res.status(500).json({ message: 'Server error' });
+  }
+};
 
 // @desc    Create a policy
 // @route   POST /api/policies
 // @access  Private/Admin
-const createPolicy = asyncHandler(async (req, res) => {
-  const { name, description, coverageAmount, premium, duration, policyType } = req.body;
+const createPolicy = async (req, res) => {
+  try {
+    const { name, description, coverageAmount, premium, duration, policyType } = req.body;
 
-  const policy = await Policy.create({
-    name,
-    description,
-    coverageAmount,
-    premium,
-    duration,
-    policyType,
-  });
+    // Validate required fields
+    if (!name || !description || !coverageAmount || !premium || !duration || !policyType) {
+      return res.status(400).json({ message: 'All fields are required' });
+    }
 
-  if (policy) {
-    res.status(201).json(policy);
-  } else {
-    res.status(400);
-    throw new Error('Invalid policy data');
+    const policy = new Policy({
+      name,
+      description,
+      coverageAmount: Number(coverageAmount),
+      premium: Number(premium),
+      duration: Number(duration),
+      policyType,
+      userId: req.user._id,
+      isActive: req.body.isActive !== undefined ? req.body.isActive : true
+    });
+
+    const savedPolicy = await policy.save();
+    res.status(201).json(savedPolicy);
+  } catch (error) {
+    res.status(400).json({ 
+      message: 'Policy creation failed',
+      error: error.message
+    });
   }
-});
+};
+
+// @desc    Update a policy
+// @route   PUT /api/policies/:id
+// @access  Private/Admin
+const updatePolicy = async (req, res) => {
+  try {
+    const policy = await Policy.findById(req.params.id);
+    if (!policy) {
+      return res.status(404).json({ message: 'Policy not found' });
+    }
+
+    const updates = {
+      name: req.body.name,
+      description: req.body.description,
+      coverageAmount: req.body.coverageAmount,
+      premium: req.body.premium,
+      duration: req.body.duration,
+      policyType: req.body.policyType,
+      isActive: req.body.isActive
+    };
+
+    Object.assign(policy, updates);
+    const updatedPolicy = await policy.save();
+    res.json(updatedPolicy);
+  } catch (error) {
+    res.status(400).json({ 
+      message: 'Policy update failed',
+      error: error.message
+    });
+  }
+};
 
 // @desc    Get policy by ID
 // @route   GET /api/policies/:id
 // @access  Private/Admin
-const getPolicyById = asyncHandler(async (req, res) => {
-  const policy = await Policy.findById(req.params.id);
-
-  if (policy) {
+const getPolicyById = async (req, res) => {
+  try {
+    const policy = await Policy.findById(req.params.id);
+    if (!policy) {
+      return res.status(404).json({ message: 'Policy not found' });
+    }
     res.json(policy);
-  } else {
-    res.status(404);
-    throw new Error('Policy not found');
+  } catch (error) {
+    res.status(500).json({ message: 'Server error' });
   }
-});
-
-// @desc    Update policy
-// @route   PUT /api/policies/:id
-// @access  Private/Admin
-const updatePolicy = asyncHandler(async (req, res) => {
-  const policy = await Policy.findById(req.params.id);
-
-  if (policy) {
-    policy.name = req.body.name || policy.name;
-    policy.description = req.body.description || policy.description;
-    policy.coverageAmount = req.body.coverageAmount || policy.coverageAmount;
-    policy.premium = req.body.premium || policy.premium;
-    policy.duration = req.body.duration || policy.duration;
-    policy.policyType = req.body.policyType || policy.policyType;
-    policy.isActive = req.body.isActive !== undefined ? req.body.isActive : policy.isActive;
-
-    const updatedPolicy = await policy.save();
-
-    res.json(updatedPolicy);
-  } else {
-    res.status(404);
-    throw new Error('Policy not found');
-  }
-});
+};
 
 // @desc    Delete policy
 // @route   DELETE /api/policies/:id
 // @access  Private/Admin
-const deletePolicy = asyncHandler(async (req, res) => {
-  const policy = await Policy.findById(req.params.id);
+const deletePolicy = async (req, res) => {
+  try {
+    const policy = await Policy.findById(req.params.id);
+    if (!policy) {
+      return res.status(404).json({ message: 'Policy not found' });
+    }
 
-  if (policy) {
-    await policy.remove();
+    await policy.deleteOne();
     res.json({ message: 'Policy removed' });
-  } else {
-    res.status(404);
-    throw new Error('Policy not found');
+  } catch (error) {
+    res.status(500).json({ message: 'Server error' });
   }
-});
+};
 
 module.exports = {
   getPolicies,

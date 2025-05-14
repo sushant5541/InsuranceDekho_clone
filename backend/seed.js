@@ -81,49 +81,6 @@ const seedInsuranceData = async () => {
       },
     ];
 
-    // Policies to Seed
-    const policies = [
-      {
-        name: 'Comprehensive Health Protect',
-        description: 'Covers hospitalization, day care procedures, and pre/post hospitalization',
-        coverageAmount: 500000,
-        premium: 12000,
-        duration: 1,
-        policyType: 'health',
-      },
-      {
-        name: 'Life Secure Plus',
-        description: 'Term life insurance with critical illness cover',
-        coverageAmount: 10000000,
-        premium: 15000,
-        duration: 20,
-        policyType: 'life',
-      },
-      {
-        name: 'Auto Shield Comprehensive',
-        description: 'Complete car protection with zero depreciation',
-        coverageAmount: 800000,
-        premium: 8000,
-        duration: 1,
-        policyType: 'car',
-      },
-      {
-        name: 'Two Wheeler Secure',
-        description: 'Complete bike insurance with personal accident cover',
-        coverageAmount: 150000,
-        premium: 2000,
-        duration: 1,
-        policyType: 'bike',
-      },
-      {
-        name: 'Senior Citizen Health Plan',
-        description: 'Special health insurance for senior citizens',
-        coverageAmount: 300000,
-        premium: 18000,
-        duration: 1,
-        policyType: 'health',
-      },
-    ];
 
     // Health Insurance Plans to Seed
     const healthPlans = [
@@ -436,7 +393,6 @@ const carPlans = [
 
     // Insert data into the database
     await Advisor.insertMany(advisors);
-    await Policy.insertMany(policies);
     await HealthInsurancePlan.insertMany(healthPlans);
     await BikeInsurancePlan.insertMany(bikePlans);
      await CarInsurancePlan.insertMany(carPlans);

@@ -1,99 +1,135 @@
-const asyncHandler = require('express-async-handler');
 const Advisor = require('../models/Advisor');
 
 // @desc    Get all advisors
 // @route   GET /api/advisors
-// @access  Private/Admin
-const getAdvisors = asyncHandler(async (req, res) => {
-  const advisors = await Advisor.find({});
-  res.json(advisors);
-});
+// @access  Public
+const getAdvisors = async (req, res) => {
+  try {
+    const { city, specialization } = req.query;
+    let query = { isActive: true };
 
-// @desc    Create an advisor
+    if (city) query.City = { $regex: new RegExp(city, 'i') };
+    if (specialization) query.specialization = { $regex: new RegExp(specialization, 'i') };
+
+    const advisors = await Advisor.find(query).sort({ yearsOfExperience: -1 });
+    res.json(advisors);
+  } catch (error) {
+    console.error('Get advisors error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+// @desc    Create new advisor
 // @route   POST /api/advisors
 // @access  Private/Admin
-const createAdvisor = asyncHandler(async (req, res) => {
-  const { name, email, phone, specialization, yearsOfExperience } = req.body;
+const createAdvisor = async (req, res) => {
+  try {
+    const { name, email, phone, specialization, City, yearsOfExperience } = req.body;
 
-  const advisorExists = await Advisor.findOne({ email });
+    // Validate required fields
+    if (!name || !email || !phone || !specialization || !City || !yearsOfExperience) {
+      return res.status(400).json({ message: 'All fields are required' });
+    }
 
-  if (advisorExists) {
-    res.status(400);
-    throw new Error('Advisor already exists');
-  }
+    // Check if advisor exists
+    const advisorExists = await Advisor.findOne({ email });
+    if (advisorExists) {
+      return res.status(400).json({ message: 'Advisor already exists' });
+    }
 
-  const advisor = await Advisor.create({
-    name,
-    email,
-    phone,
-    specialization,
-    yearsOfExperience,
-  });
+    const advisor = await Advisor.create({
+      ...req.body,
+      profilePhoto: req.body.profilePhoto || 'https://randomuser.me/api/portraits/lego/1.jpg',
+      userId: req.user._id
+    });
 
-  if (advisor) {
     res.status(201).json(advisor);
-  } else {
-    res.status(400);
-    throw new Error('Invalid advisor data');
+  } catch (error) {
+    console.error('Create advisor error:', error);
+    res.status(400).json({ 
+      message: 'Advisor creation failed',
+      error: error.message
+    });
   }
-});
-
-// @desc    Get advisor by ID
-// @route   GET /api/advisors/:id
-// @access  Private/Admin
-const getAdvisorById = asyncHandler(async (req, res) => {
-  const advisor = await Advisor.findById(req.params.id);
-
-  if (advisor) {
-    res.json(advisor);
-  } else {
-    res.status(404);
-    throw new Error('Advisor not found');
-  }
-});
+};
 
 // @desc    Update advisor
 // @route   PUT /api/advisors/:id
 // @access  Private/Admin
-const updateAdvisor = asyncHandler(async (req, res) => {
-  const advisor = await Advisor.findById(req.params.id);
+const updateAdvisor = async (req, res) => {
+  try {
+    const advisor = await Advisor.findById(req.params.id);
+    if (!advisor) {
+      return res.status(404).json({ message: 'Advisor not found' });
+    }
 
-  if (advisor) {
-    advisor.name = req.body.name || advisor.name;
-    advisor.email = req.body.email || advisor.email;
-    advisor.phone = req.body.phone || advisor.phone;
-    advisor.specialization = req.body.specialization || advisor.specialization;
-    advisor.yearsOfExperience = req.body.yearsOfExperience || advisor.yearsOfExperience;
-    advisor.isActive = req.body.isActive !== undefined ? req.body.isActive : advisor.isActive;
+    // Update fields
+    const updates = {
+      name: req.body.name,
+      email: req.body.email,
+      phone: req.body.phone,
+      specialization: req.body.specialization,
+      City: req.body.City,
+      yearsOfExperience: req.body.yearsOfExperience,
+      profilePhoto: req.body.profilePhoto || advisor.profilePhoto,
+      isActive: req.body.isActive
+    };
 
+    Object.assign(advisor, updates);
     const updatedAdvisor = await advisor.save();
-
     res.json(updatedAdvisor);
-  } else {
-    res.status(404);
-    throw new Error('Advisor not found');
+  } catch (error) {
+    console.error('Update advisor error:', error);
+    res.status(400).json({ 
+      message: 'Advisor update failed',
+      error: error.message
+    });
   }
-});
+};
 
 // @desc    Delete advisor
 // @route   DELETE /api/advisors/:id
 // @access  Private/Admin
-const deleteAdvisor = asyncHandler(async (req, res) => {
-  const advisor = await Advisor.findById(req.params.id);
+const deleteAdvisor = async (req, res) => {
+  try {
+    const advisor = await Advisor.findById(req.params.id);
+    if (!advisor) {
+      return res.status(404).json({ message: 'Advisor not found' });
+    }
 
-  if (advisor) {
-    await advisor.remove();
-    res.json({ message: 'Advisor removed' });
-  } else {
-    res.status(404);
-    throw new Error('Advisor not found');
+    await advisor.deleteOne();
+    res.json({ message: 'Advisor removed successfully' });
+  } catch (error) {
+    console.error('Delete advisor error:', error);
+    res.status(500).json({ 
+      message: 'Server error',
+      error: error.message
+    });
   }
-});
+};
+
+// @desc    Get single advisor by ID
+// @route   GET /api/advisors/:id
+// @access  Private/Admin
+const getAdvisorById = async (req, res) => {
+  try {
+    const advisor = await Advisor.findById(req.params.id);
+    
+    if (!advisor) {
+      return res.status(404).json({ message: 'Advisor not found' });
+    }
+    
+    res.json(advisor);
+  } catch (error) {
+    console.error('Get advisor by ID error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
 
 module.exports = {
   getAdvisors,
-  createAdvisor,
   getAdvisorById,
+  createAdvisor,
   updateAdvisor,
-  deleteAdvisor,
+  deleteAdvisor
 };

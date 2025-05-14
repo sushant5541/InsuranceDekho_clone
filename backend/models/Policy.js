@@ -27,6 +27,20 @@ const policySchema = mongoose.Schema(
       enum: ['life', 'health', 'car', 'bike'],
       required: true,
     },
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      required: true
+    },
+    purchaseDate: {
+      type: Date,
+      default: Date.now
+    },
+    status: {
+      type: String,
+      enum: ['active', 'expired', 'cancelled'],
+      default: 'active'
+    },
     isActive: {
       type: Boolean,
       default: true,
@@ -37,6 +51,4 @@ const policySchema = mongoose.Schema(
   }
 );
 
-const Policy = mongoose.model('Policy', policySchema);
-
-module.exports = Policy;
+module.exports = mongoose.model('Policy', policySchema);

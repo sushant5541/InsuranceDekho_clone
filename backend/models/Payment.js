@@ -1,3 +1,4 @@
+// models/Payment.js
 const mongoose = require('mongoose');
 
 const paymentSchema = new mongoose.Schema({
@@ -8,13 +9,17 @@ const paymentSchema = new mongoose.Schema({
   },
   plan: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'BikeInsurancePlan',
+    required: true
+  },
+  planType: {
+    type: String,
+    enum: ['bike', 'car', 'health'],
     required: true
   },
   razorpayOrderId: { type: String, required: true },
   razorpayPaymentId: { type: String },
   razorpaySignature: { type: String },
-  amount: { type: Number, required: true }, // in paise
+  amount: { type: Number, required: true },
   currency: { type: String, default: 'INR' },
   status: { 
     type: String, 
@@ -22,7 +27,8 @@ const paymentSchema = new mongoose.Schema({
     default: 'created'
   },
   policyIssued: { type: Boolean, default: false },
-  receipt: { type: String }
+  receipt: { type: String },
+  policyDetails: { type: mongoose.Schema.Types.Mixed } // Store the complete policy details here
 }, { timestamps: true });
 
 module.exports = mongoose.model('Payment', paymentSchema);

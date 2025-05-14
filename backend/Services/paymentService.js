@@ -48,8 +48,8 @@ class PaymentService {
     }
   }
 
-  async verifyPayment(paymentId, orderId, signature, userId, planId) {
-    try {
+async verifyPayment(paymentId, orderId, signature, userId, planId, planType, planDetails) {
+  try {
       // Verify signature
       const generatedSignature = crypto
         .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET)
@@ -65,29 +65,38 @@ class PaymentService {
       }
 
       // Update payment record
-      const payment = await Payment.findOneAndUpdate(
-        { razorpayOrderId: orderId },
-        {
-          razorpayPaymentId: paymentId,
-          razorpaySignature: signature,
-          status: 'captured',
-          policyIssued: true,
-          receipt: `INS-${planId}-${Date.now()}`
-        },
-        { new: true }
-      ).populate('user plan');
+     const payment = await Payment.findOneAndUpdate(
+      { razorpayOrderId: orderId },
+      {
+        razorpayPaymentId: paymentId,
+        razorpaySignature: signature,
+        status: 'captured',
+        policyIssued: true,
+        receipt: `INS-${planId}-${Date.now()}`,
+        policyDetails: planDetails, // Store the complete policy details
+        planType: planType
+      },
+      { new: true }
+    );
 
-      return {
-        success: true,
-        payment,
-        message: 'Payment verified successfully'
-      };
-    } catch (error) {
-      console.error('Payment verification error:', error);
-      throw new Error('Payment verification failed');
-    }
+    return {
+      success: true,
+      payment: {
+        _id: payment._id,
+        planType: payment.planType,
+        amount: payment.amount,
+        status: payment.status,
+        receipt: payment.receipt,
+        createdAt: payment.createdAt,
+        policyDetails: payment.policyDetails
+      },
+      message: 'Payment verified successfully'
+    };
+  } catch (error) {
+    console.error('Payment verification error:', error);
+    throw new Error('Payment verification failed');
   }
-
+}
   async getPaymentDetails(paymentId) {
     return await Payment.findById(paymentId).populate('user plan');
   }

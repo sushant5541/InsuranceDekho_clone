@@ -18,6 +18,8 @@ const appointmentsRouter = require('./routes/appointments');
 const bikeInsuranceRoutes = require('./routes/bikeInsuranceRoutes')
 const paymentRoutes = require('./routes/paymentRoutes');
 const carInsuranceRoutes = require('./routes/carInsuranceRoutes');
+const InsuranceRoutes = require('./routes/InsurnaceRoutes');
+
 
 
 dotenv.config();
@@ -53,6 +55,7 @@ app.use('/api/products', productRoutes);
 app.use('/api/policies', policyRoutes);
 app.use('/api/advisors', advisorRoutes);
 app.use('/api/insurance', insuranceRoutes);
+app.use('/api/insurance', InsuranceRoutes);
 app.use('/api/admin/users', adminUserRoutes);
 app.use('/api/appointments', appointmentsRouter);
 app.use('/api/bikeInsurance', bikeInsuranceRoutes);
