@@ -41,33 +41,57 @@
     };
 
     const handleSubmit = async (e) => {
-      e.preventDefault();
-      setLoading(true);
-      setError('');
-    
-      try {
-        const token = localStorage.getItem('token');
-        const response = await axios.put(
-          'http://localhost:4000/api/auth/profile',
-          formData,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-    
-        // Redirect or update context if needed
-        navigate('/dashboard', {
-          state: { success: 'Profile updated successfully!' },
-        });
-      } catch (err) {
-        setError(err.response?.data?.message || 'Failed to update profile');
-      } finally {
-        setLoading(false);
+  e.preventDefault();
+  setLoading(true);
+  setError('');
+
+  try {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      throw new Error('No authentication token found');
+    }
+
+    // Ensure all required fields are present
+    if (!formData.name) {
+      throw new Error('Name is required');
+    }
+
+    const response = await axios.put(
+      'http://localhost:4000/api/auth/profile',
+      {
+        name: formData.name,
+        gender: formData.gender,
+        dob: formData.dob,
+        mobile: formData.mobile
+      },
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        }
       }
-    };
-    
+    );
+
+    if (response.data.success) {
+      navigate('/dashboard', {
+        state: { 
+          success: 'Profile updated successfully!',
+          updatedUser: response.data.user 
+        },
+      });
+    } else {
+      throw new Error(response.data.message || 'Profile update failed');
+    }
+  } catch (err) {
+    setError(err.response?.data?.message || err.message || 'Failed to update profile');
+    console.error('Profile update error:', {
+      error: err,
+      response: err.response?.data
+    });
+  } finally {
+    setLoading(false);
+  }
+};
 
 
     return (

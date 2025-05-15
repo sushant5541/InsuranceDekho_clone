@@ -7,7 +7,6 @@ import Register from './pages/Register';
 import UserDashboard from './pages/UserDashboard';
 import EditProfile from './pages/EditProfile';
 import ForgotPassword from './pages/ForgotPassword';
-import ResetPassword from './pages/ResetPassword';
 import CarInsurance from './pages/carInsurance';
 import BikeInsurance from './pages/bikeInsurance';
 import HealthInsurance from './pages/healthinsurance';
@@ -38,7 +37,6 @@ function App() {
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
-      <Route path="/reset-password/:token" element={<ResetPassword />} />
       
       {/* Updated dashboard route */}
       <Route 

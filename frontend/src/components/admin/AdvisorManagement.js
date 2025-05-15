@@ -4,7 +4,7 @@ import axios from 'axios';
 import { useAuth } from '../../context/AuthContext';
 
 const AdvisorManagement = () => {
-  const { user } = useAuth();
+  const { user, token } = useAuth();
   const [advisors, setAdvisors] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -25,13 +25,20 @@ const AdvisorManagement = () => {
   const [formData, setFormData] = useState(initialFormData);
 
   // Create axios instance with auth token
-  const api = axios.create({
+ const api = axios.create({
     baseURL: 'http://localhost:4000/api',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${user?.token}` // Include token in default headers
-    }
   });
+
+  // Add request interceptor to include token in headers
+  api.interceptors.request.use(config => {
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  }, error => {
+    return Promise.reject(error);
+  });
+
 
   useEffect(() => {
     const fetchAdvisors = async () => {
