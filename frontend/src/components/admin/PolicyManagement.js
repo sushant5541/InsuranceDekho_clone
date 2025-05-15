@@ -34,7 +34,7 @@ const PolicyManagement = () => {
   const [formData, setFormData] = useState(initialFormData);
 
   const api = axios.create({
-    baseURL: 'http://localhost:4000/api',
+    baseURL: 'http://insurance-backend:4000/api',
     headers: { Authorization: `Bearer ${token}` }
   });
 

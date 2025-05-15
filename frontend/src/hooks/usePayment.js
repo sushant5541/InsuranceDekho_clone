@@ -35,7 +35,7 @@ const usePayment = () => {
       }
 
       // 2. Create payment order
-          const response = await fetch('http://localhost:4000/api/payments/create-order', {
+          const response = await fetch('http://insurance-backend:4000/api/payments/create-order', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -71,7 +71,7 @@ const usePayment = () => {
         order_id: order.id,
         handler: async function (response) {
           try {
-             const verification = await fetch('http://localhost:4000/api/payments/verify', {
+             const verification = await fetch('http://insurance-backend:4000/api/payments/verify', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

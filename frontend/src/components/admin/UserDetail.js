@@ -20,7 +20,7 @@ const UserDetail = () => {
     const fetchUser = async () => {
       try {
         const token = localStorage.getItem('token');
-        const response = await axios.get(`http://localhost:4000/api/admin/users/${id}`, {
+        const response = await axios.get(`http://insurance-backend:4000/api/admin/users/${id}`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         setUser(response.data);

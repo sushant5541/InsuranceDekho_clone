@@ -26,7 +26,7 @@ const PolicyForm = () => {
       const fetchPolicy = async () => {
         try {
           const token = localStorage.getItem('token');
-          const response = await axios.get(`http://localhost:4000/api/policies/${id}`, {
+          const response = await axios.get(`http://insurance-backend:4000/api/policies/${id}`, {
             headers: { Authorization: `Bearer ${token}` }
           });
           setPolicy(response.data);

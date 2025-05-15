@@ -40,7 +40,7 @@ const handleSubmit = async (e) => {
     }
 
     const response = await axios.put(
-      'http://localhost:4000/api/auth/forgot-password',
+      'http://insurance-backend:4000/api/auth/forgot-password',
       {
         email: normalizedEmail,
         password: trimmedPassword

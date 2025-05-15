@@ -32,8 +32,8 @@ const Login = () => {
 
     try {
       const endpoint = isAdminLogin
-        ? 'http://localhost:4000/api/admin/login'
-        : 'http://localhost:4000/api/auth/login';
+        ? 'http://insurance-backend:4000/api/admin/login'
+        : 'http://insurance-backend:4000/api/auth/login';
 
       const response = await axios.post(endpoint, {
         email: trimmedEmail,

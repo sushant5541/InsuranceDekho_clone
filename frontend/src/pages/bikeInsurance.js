@@ -53,7 +53,7 @@ useEffect(() => {
   const fetchInsurancePlans = async () => {
     setLoading(true);
     try {
-      const response = await fetch(`http://localhost:4000/api/bikeInsurance/plans?type=${activeTab}`, {
+      const response = await fetch(`http://insurance-backend:4000/api/bikeInsurance/plans?type=${activeTab}`, {
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json'

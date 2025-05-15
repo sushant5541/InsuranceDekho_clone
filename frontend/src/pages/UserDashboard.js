@@ -82,7 +82,7 @@ const UserDashboard = () => {
     try {
       const token = localStorage.getItem('token');
       const response = await axios.delete(
-        `http://localhost:4000/api/payments/${paymentId}`,
+        `http://insurance-backend:4000/api/payments/${paymentId}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
 

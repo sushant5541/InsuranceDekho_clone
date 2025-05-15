@@ -4,7 +4,7 @@ import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 import '../styles/Advisor.css';
 const api = axios.create({
-    baseURL: 'http://localhost:4000/api',
+    baseURL: 'http://insurance-backend:4000/api',
 });
 
 const AdvisorsPage = () => {
