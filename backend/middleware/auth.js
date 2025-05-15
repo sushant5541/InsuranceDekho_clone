@@ -5,136 +5,89 @@ const User = require('../models/User');
 const Admin = require('../models/Admin');
 
 const protect = asyncHandler(async (req, res, next) => {
+  // Check if authorization header exists
+  if (!req.headers.authorization) {
+    return res.status(401).json({ message: 'Authorization header missing' });
+  }
+
+  // Extract token safely
+  const authHeader = req.headers.authorization;
+  const tokenParts = authHeader.split(' ');
+  
+  // Validate token format
+  if (tokenParts.length !== 2 || tokenParts[0] !== 'Bearer') {
+    return res.status(401).json({ message: 'Invalid authorization format' });
+  }
+
+  const token = tokenParts[1];
+  
+  // Basic token validation
+  if (!token || typeof token !== 'string' || token.split('.').length !== 3) {
+    return res.status(401).json({ message: 'Invalid token format' });
+  }
+
   try {
-    // Validate authorization header structure
-    const authHeader = req.headers.authorization;
-    if (!authHeader) {
-      return res.status(401).json({ 
-        success: false,
-        message: 'Authorization header required' 
-      });
-    }
-
-    // Extract and validate token format
-    const tokenParts = authHeader.split(' ');
-    if (tokenParts.length !== 2 || tokenParts[0] !== 'Bearer') {
-      return res.status(401).json({ 
-        success: false,
-        message: 'Invalid authorization format. Use: Bearer <token>' 
-      });
-    }
-
-    const token = tokenParts[1];
-    if (!token || typeof token !== 'string' || token.split('.').length !== 3) {
-      return res.status(401).json({ 
-        success: false,
-        message: 'Invalid token structure' 
-      });
-    }
-
-    // Verify token and decode
+    // Verify token
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    
+    // Validate decoded token
     if (!decoded?.id) {
-      return res.status(401).json({ 
-        success: false,
-        message: 'Invalid token payload' 
-      });
+      return res.status(401).json({ message: 'Invalid token payload' });
     }
 
-    // Validate and convert ID
-    let userId;
-    try {
-      userId = new mongoose.Types.ObjectId(decoded.id);
-    } catch (err) {
-      return res.status(401).json({ 
-        success: false,
-        message: 'Invalid user ID format in token' 
-      });
-    }
+    const userId = new mongoose.Types.ObjectId(decoded.id);
 
-    // Check both collections with proper error handling
-    let user, adminUser;
-    try {
-      [user, adminUser] = await Promise.all([
-        User.findById(userId).select('-password').lean().exec(),
-        Admin.findById(userId).select('-password').lean().exec()
-      ]);
-    } catch (dbError) {
-      console.error('Database lookup error:', dbError);
-      return res.status(500).json({ 
-        success: false,
-        message: 'Error verifying user identity' 
-      });
-    }
+    // Check both collections simultaneously
+    const [user, adminUser] = await Promise.all([
+      User.findById(userId).select('-password').lean(),
+      Admin.findById(userId).select('-password').lean()
+    ]);
 
-    // Determine authenticated user
     const authenticatedUser = adminUser || user;
+    
     if (!authenticatedUser) {
-      return res.status(401).json({ 
-        success: false,
-        message: 'User account not found' 
-      });
+      return res.status(401).json({ message: 'User not found' });
     }
 
-    // Attach user to request with proper typing
+    // Attach complete user information with proper admin flag
     req.user = {
       ...authenticatedUser,
       _id: userId,
-      isAdmin: !!adminUser
+      isAdmin: !!adminUser // True if found in Admin collection
     };
 
-    // Proceed to next middleware
     next();
   } catch (error) {
-    console.error('Authentication middleware error:', error);
-
-    // Handle specific JWT errors
+    console.error('Authentication error:', error);
+    
+    // More specific error messages
+    let errorMessage = 'Authentication failed';
     if (error.name === 'TokenExpiredError') {
-      return res.status(401).json({ 
-        success: false,
-        message: 'Session expired. Please log in again.',
-        code: 'TOKEN_EXPIRED'
-      });
+      errorMessage = 'Token expired';
+    } else if (error.name === 'JsonWebTokenError') {
+      errorMessage = 'Invalid token';
     }
 
-    if (error.name === 'JsonWebTokenError') {
-      return res.status(401).json({ 
-        success: false,
-        message: 'Invalid authentication token',
-        code: 'INVALID_TOKEN'
-      });
-    }
-
-    // Handle unexpected errors
-    res.status(500).json({ 
-      success: false,
-      message: 'Authentication processing failed',
-      code: 'AUTH_FAILURE'
+    res.status(401).json({ 
+      message: errorMessage,
+      error: error.message 
     });
   }
 });
 
 const admin = (req, res, next) => {
-  // First verify the protect middleware ran successfully
   if (!req.user) {
-    return res.status(403).json({ 
-      success: false,
-      message: 'Request not properly authenticated',
-      code: 'MISSING_AUTH'
-    });
+    return res.status(403).json({ message: 'User not authenticated' });
   }
 
-  // Then check admin status
-  if (req.user.isAdmin) {
+  if (req.user?.isAdmin) {
     next();
   } else {
     res.status(403).json({ 
-      success: false,
-      message: 'Administrator privileges required',
-      code: 'ADMIN_REQUIRED',
+      message: 'Admin privileges required',
       user: {
-        id: req.user._id,
-        role: req.user.isAdmin ? 'admin' : 'user'
+        id: req.user?._id,
+        isAdmin: req.user?.isAdmin
       }
     });
   }

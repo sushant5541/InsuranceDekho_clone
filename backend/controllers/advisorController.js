@@ -1,21 +1,34 @@
 const Advisor = require('../models/Advisor');
 
-// @desc    Get all advisors
+// @desc    Get all advisors (public)
 // @route   GET /api/advisors
 // @access  Public
 const getAdvisors = async (req, res) => {
   try {
-    const { city, specialization } = req.query;
-    let query = { isActive: true };
+    // For public access, only show active advisors
+    // For admin access, show all advisors
+    const isAdminRequest = req.user?.isAdmin;
+    let query = isAdminRequest ? {} : { isActive: true };
 
+    const { city, specialization } = req.query;
+    
     if (city) query.City = { $regex: new RegExp(city, 'i') };
     if (specialization) query.specialization = { $regex: new RegExp(specialization, 'i') };
 
     const advisors = await Advisor.find(query).sort({ yearsOfExperience: -1 });
-    res.json(advisors);
+    
+    if (!advisors || advisors.length === 0) {
+      return res.status(200).json([]); // Return empty array if no advisors found
+    }
+
+    res.status(200).json(advisors);
   } catch (error) {
     console.error('Get advisors error:', error);
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ 
+      success: false,
+      message: 'Server error while fetching advisors',
+      error: error.message 
+    });
   }
 };
 
@@ -38,15 +51,20 @@ const createAdvisor = async (req, res) => {
     }
 
     const advisor = await Advisor.create({
-      ...req.body,
+      name,
+      email,
+      phone,
+      specialization,
+      City,
+      yearsOfExperience,
       profilePhoto: req.body.profilePhoto || 'https://randomuser.me/api/portraits/lego/1.jpg',
-      userId: req.user._id
+      isActive: req.body.isActive !== undefined ? req.body.isActive : true
     });
 
     res.status(201).json(advisor);
   } catch (error) {
     console.error('Create advisor error:', error);
-    res.status(400).json({ 
+    res.status(400).json({
       message: 'Advisor creation failed',
       error: error.message
     });
@@ -63,24 +81,22 @@ const updateAdvisor = async (req, res) => {
       return res.status(404).json({ message: 'Advisor not found' });
     }
 
-    // Update fields
-    const updates = {
-      name: req.body.name,
-      email: req.body.email,
-      phone: req.body.phone,
-      specialization: req.body.specialization,
-      City: req.body.City,
-      yearsOfExperience: req.body.yearsOfExperience,
-      profilePhoto: req.body.profilePhoto || advisor.profilePhoto,
-      isActive: req.body.isActive
-    };
+    const { name, email, phone, specialization, City, yearsOfExperience, profilePhoto, isActive } = req.body;
 
-    Object.assign(advisor, updates);
+    advisor.name = name || advisor.name;
+    advisor.email = email || advisor.email;
+    advisor.phone = phone || advisor.phone;
+    advisor.specialization = specialization || advisor.specialization;
+    advisor.City = City || advisor.City;
+    advisor.yearsOfExperience = yearsOfExperience || advisor.yearsOfExperience;
+    advisor.profilePhoto = profilePhoto || advisor.profilePhoto;
+    advisor.isActive = isActive !== undefined ? isActive : advisor.isActive;
+
     const updatedAdvisor = await advisor.save();
     res.json(updatedAdvisor);
   } catch (error) {
     console.error('Update advisor error:', error);
-    res.status(400).json({ 
+    res.status(400).json({
       message: 'Advisor update failed',
       error: error.message
     });
@@ -101,7 +117,7 @@ const deleteAdvisor = async (req, res) => {
     res.json({ message: 'Advisor removed successfully' });
   } catch (error) {
     console.error('Delete advisor error:', error);
-    res.status(500).json({ 
+    res.status(500).json({
       message: 'Server error',
       error: error.message
     });
@@ -114,11 +130,11 @@ const deleteAdvisor = async (req, res) => {
 const getAdvisorById = async (req, res) => {
   try {
     const advisor = await Advisor.findById(req.params.id);
-    
+
     if (!advisor) {
       return res.status(404).json({ message: 'Advisor not found' });
     }
-    
+
     res.json(advisor);
   } catch (error) {
     console.error('Get advisor by ID error:', error);
