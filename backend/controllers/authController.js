@@ -56,13 +56,6 @@ exports.register = async (req, res) => {
 
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: "1d" });
 
-    res.status(201).json({
-      _id: user._id,
-      name: user.name,
-      email: user.email,
-      token
-    });
-
     res.status(201).json(generateAuthResponse(user));
   } catch (error) {
     console.error('Registration error:', error);
@@ -70,39 +63,60 @@ exports.register = async (req, res) => {
   }
 };
 
+const hashPassword = async (password) => {
+  const salt = await bcrypt.genSalt(10);
+  return await bcrypt.hash(password, salt);
+};
+
 exports.login = async (req, res) => {
   const { email, password } = req.body;
 
   try {
-    const user = await User.findOne({ email });
+    // Case-insensitive email search
+    const user = await User.findOne({
+      email: { $regex: new RegExp(`^${email}$`, 'i') }
+    });
+
     if (!user) {
-      return res.status(400).json({ message: 'Invalid email or password' });
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid email or password'
+      });
     }
 
+    // Compare passwords
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
-      return res.status(400).json({ message: 'Invalid email or password' });
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid email or password'
+      });
     }
 
-    // ✅ Generate JWT
+    // Generate JWT token
     const token = jwt.sign(
       { id: user._id, email: user.email },
       process.env.JWT_SECRET,
       { expiresIn: '1h' }
     );
 
-    // ✅ Respond with token and user
+    // Return user data without password
+    const userData = user.toObject();
+    delete userData.password;
+
     res.json({
+      success: true,
       token,
-      user: {
-        id: user._id,
-        name: user.name,
-        email: user.email
-      }
+      user: userData
     });
-  } catch (err) {
-    console.error('Login error:', err);
-    res.status(500).json({ message: 'Server error' });
+
+  } catch (error) {
+    console.error('Login error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error during login',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
   }
 };
 ;
@@ -124,89 +138,107 @@ exports.profile = async (req, res) => {
 
 exports.updateProfile = async (req, res) => {
   try {
-    const user = await User.findById(req.user.id);
-
-    if (!user) {
-      return res.status(404).json({ message: 'User not found' });
+    // Enhanced validation
+    if (!req.user || !req.user._id) {
+      return res.status(401).json({ 
+        success: false,
+        message: 'Not authorized - Invalid user session' 
+      });
     }
 
-    user.name = req.body.name || user.name;
-    user.gender = req.body.gender || user.gender;
-    user.dob = req.body.dob || user.dob;
-    user.mobile = req.body.mobile || user.mobile;
+    // Validate input data
+    const { name, gender, dob, mobile } = req.body;
+    if (!name) {
+      return res.status(400).json({
+        success: false,
+        message: 'Name is required'
+      });
+    }
 
-    await user.save();
+    // Find user in either User or Admin collection
+    const [user, adminUser] = await Promise.all([
+      User.findById(req.user._id),
+      Admin.findById(req.user._id)
+    ]);
 
-    res.json({ message: 'Profile updated successfully', user });
+    const userToUpdate = user || adminUser;
+    if (!userToUpdate) {
+      return res.status(404).json({ 
+        success: false,
+        message: 'User not found' 
+      });
+    }
+
+    // Update fields with validation
+    userToUpdate.name = name;
+    if (gender) userToUpdate.gender = gender;
+    if (dob) userToUpdate.dob = dob;
+    if (mobile) {
+      if (!/^\d{10}$/.test(mobile)) {
+        return res.status(400).json({
+          success: false,
+          message: 'Mobile number must be 10 digits'
+        });
+      }
+      userToUpdate.mobile = mobile;
+    }
+
+    await userToUpdate.save();
+
+    // Return updated user data without password
+    const userData = userToUpdate.toObject();
+    delete userData.password;
+
+    res.json({ 
+      success: true,
+      message: 'Profile updated successfully',
+      user: userData
+    });
+
   } catch (error) {
     console.error('Update profile error:', error);
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ 
+      success: false,
+      message: 'Server error during profile update',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
   }
 };
+// Request password reset (POST remains appropriate here)
+exports.forgotPassword = async (req, res) => {
+  try {
+    const { email, password } = req.body;
 
-  exports.forgotPassword = async (req, res) => {
-    const { email } = req.body;
-  
-    try {
-      const user = await User.findOne({ email });
-      if (!user) return res.status(404).json({ message: 'User not found' });
-  
-      // Generate token
-      const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '15m' });
-  
-      // Save token to user document (optional, useful for verifying later)
-      user.resetToken = token;
-      user.resetTokenExpire = Date.now() + 15 * 60 * 1000;
-      await user.save();
-  
-      // Send email
-      const transporter = nodemailer.createTransport({
-        service: 'Gmail',
-        auth: {
-          user: process.env.EMAIL_USER,
-          pass: process.env.EMAIL_PASS
-        }
-      });
-  
-      const resetUrl = `http://localhost:3000/reset-password/${token}`;
-      const message = `Click the link to reset your password: ${resetUrl}`;
-  
-      await transporter.sendMail({
-        from: '"InsuranceDekho Clone" <no-reply@example.com>',
-        to: email,
-        subject: 'Password Reset',
-        text: message
-      });
-  
-      res.json({ message: 'Password reset link sent to your email.' });
-    } catch (err) {
-      console.error(err);
-      res.status(500).json({ message: 'Server error' });
-    }
-  };
+    // Case-insensitive email search
+    const user = await User.findOne({ 
+      email: { $regex: new RegExp(`^${email}$`, 'i') } 
+    });
 
-  exports.resetPassword = async (req, res) => {
-    const { token } = req.params;
-    const { password } = req.body;
-  
-    try {
-      const decoded = jwt.verify(token, process.env.JWT_SECRET);
-      const user = await User.findById(decoded.id);
-  
-      if (!user || user.resetToken !== token || Date.now() > user.resetTokenExpire) {
-        return res.status(400).json({ message: 'Invalid or expired token' });
-      }
-  
-      user.password = await bcrypt.hash(password, 10);
-      user.resetToken = undefined;
-      user.resetTokenExpire = undefined;
-      await user.save();
-  
-      res.json({ message: 'Password reset successful. You can now log in.' });
-    } catch (err) {
-      res.status(400).json({ message: 'Invalid or expired token' });
+    if (!user) {
+      return res.status(404).json({ 
+        success: false,
+        message: 'User not found with this email' 
+      });
     }
+
+    // Hash password with consistent salt rounds (10)
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+
+    // Update user password
+    user.password = hashedPassword;
+    await user.save();
+
+    res.status(200).json({ 
+      success: true,
+      message: 'Password has been successfully updated' 
+    });
+  } catch (error) {
+    console.error('Password reset error:', error);
+    res.status(500).json({ 
+      success: false,
+      message: 'Server error during password reset',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
   }
-
-
-  
+};

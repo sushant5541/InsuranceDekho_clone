@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { register, login, forgotPassword, profile, updateProfile } = require('../controllers/authController');
+const bcrypt = require('bcryptjs');
 const { protect, admin } = require('../middleware/auth');
 const User = require('../models/User'); 
 const Payment = require('../models/Payment');
@@ -10,30 +11,41 @@ const HealthInsurancePlan = require('../models/HealthInsurancePlan');
 
 router.post('/register', register);
 router.post('/login', login);
-router.post('/forgotPassword', forgotPassword);
-router.get('/profile', protect, profile) 
-router.put('/profile', protect, updateProfile);
+router.route('/profile')
+  .get(protect, profile)          // GET /api/auth/profile
+  .put(protect, updateProfile);  
 
-const bcrypt = require('bcryptjs');
 
-router.get('/verify-admin', protect, admin, (req, res) => {
-  res.json({
-    isAdmin: true,
-    user: {
-      id: req.user._id,
-      name: req.user.name,
-      email: req.user.email
+ // For non-logged in users
+router.put('/forgot-password', async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    
+    const user = await User.findOne({ 
+      email: { $regex: new RegExp(`^${email}$`, 'i') } 
+    });
+    
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
     }
-  });
-});
 
-router.get('/verify-token', protect, (req, res) => {
-  res.json({
-    authenticated: true,
-    user: req.user
-  });
+    const salt = await bcrypt.genSalt(10);
+    user.password = await bcrypt.hash(password, salt);
+    
+    await user.save();
+    
+    res.json({ 
+      success: true,
+      message: 'Password updated successfully' 
+    });
+  } catch (err) {
+    console.error('Password reset error:', err);
+    res.status(500).json({ 
+      message: 'Server error during password reset',
+      ...(process.env.NODE_ENV === 'development' && { error: err.message })
+    });
+  }
 });
-
 router.get('/user-policies', protect, async (req, res) => {
   try {
     const userId = req.user._id;
@@ -140,6 +152,8 @@ router.get('/me', protect, async (req, res) => {
     res.status(500).json({ message: 'Failed to fetch user data' });
   }
 });
+
+
 
 module.exports = router;
 

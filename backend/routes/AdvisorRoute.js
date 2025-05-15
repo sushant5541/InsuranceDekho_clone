@@ -1,3 +1,4 @@
+// routes/AdvisorRoute.js
 const express = require('express');
 const router = express.Router();
 const {
@@ -13,10 +14,13 @@ const { protect, admin } = require('../middleware/auth');
 router.route('/').get(getAdvisors);
 
 // Admin protected routes
-router.route('/').post(protect, admin, createAdvisor);
+router.use(protect); // Apply protect middleware to all routes below
+router.use(admin);   // Apply admin middleware to all routes below
+
+router.route('/').post(createAdvisor);
 router.route('/:id')
-  .get(protect, admin, getAdvisorById)
-  .put(protect, admin, updateAdvisor)
-  .delete(protect, admin, deleteAdvisor);
+  .get(getAdvisorById)
+  .put(updateAdvisor)
+  .delete(deleteAdvisor);
 
 module.exports = router;
