@@ -1,3 +1,4 @@
+
 version: '3'
 services:
   mongo:
@@ -8,6 +9,7 @@ services:
   backend:
     build: ./backend        # <-- Use build if you have a Dockerfile for backend
     ports:
+<<<<<<< Updated upstream
       - "5000:5000"
     environment:
       - PORT=5000
@@ -15,14 +17,24 @@ services:
       - JWT_SECRET=jwt_secret
       - RAZORPAY_KEY_ID=rzp_test_enSNChz4e2UlQM
       - RAZORPAY_KEY_SECRET=dTCBH71HGxDxprdMYwYMaMHP
+=======
+      - "4000:4000"
+    environment:
+      - MONGO_URI=mongodb://mongo:27017/insurancedb
+>>>>>>> Stashed changes
     depends_on:
       - mongo
 
   frontend:
     build: ./frontend       # <-- Use build if you have Dockerfile in frontend/
     ports:
+<<<<<<< Updated upstream
       - "3000:80"           # <-- React runs on port 80 in container; map it to 3000
     environment:
       - REACT_APP_API_URL=http://backend:5000
+=======
+      - "3000:80"
+>>>>>>> Stashed changes
     depends_on:
       - backend
+
