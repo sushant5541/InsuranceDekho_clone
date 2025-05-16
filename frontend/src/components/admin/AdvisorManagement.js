@@ -26,7 +26,7 @@ const AdvisorManagement = () => {
 
   // Create axios instance with auth token
  const api = axios.create({
-    baseURL: 'http://insurance-backend:4000/api',
+    baseURL: `${process.env.REACT_APP_API_URL}/api`,
   });
 
   // Add request interceptor to include token in headers

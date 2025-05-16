@@ -22,7 +22,7 @@ const UserManagement = () => {
     const fetchUsers = async () => {
       try {
         const token = localStorage.getItem('token');
-        const response = await axios.get('http://localhost:4000/api/admin/users', {
+        const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/admin/users`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         setUsers(response.data);
@@ -50,7 +50,7 @@ const UserManagement = () => {
     try {
       const token = localStorage.getItem('token');
       await axios.put(
-        `http://localhost:4000/api/admin/users/${userId}/status`,
+        `${process.env.REACT_APP_API_URL}/api/admin/users/${userId}/status`,
         { isActive },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -70,7 +70,7 @@ const UserManagement = () => {
   const handleDelete = async () => {
     try {
       const token = localStorage.getItem('token');
-      await axios.delete(`http://insurance-backend:4000/api/admin/users/${userToDelete}`, {
+      await axios.delete(`${process.env.REACT_APP_API_URL}api/admin/users/${userToDelete}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setUsers(users.filter((user) => user._id !== userToDelete));

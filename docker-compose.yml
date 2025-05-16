@@ -6,15 +6,23 @@ services:
       - "27017:27017"
 
   backend:
-    image: insurance-backend:latest
+    build: ./backend        # <-- Use build if you have a Dockerfile for backend
     ports:
       - "5000:5000"
+    environment:
+      - PORT=5000
+      - MONGO_URL=mongodb://mongo:27017/InsuranceDekho
+      - JWT_SECRET=jwt_secret
+      - RAZORPAY_KEY_ID=rzp_test_enSNChz4e2UlQM
+      - RAZORPAY_KEY_SECRET=dTCBH71HGxDxprdMYwYMaMHP
     depends_on:
       - mongo
 
   frontend:
-    image: insurance-frontend:latest
+    build: ./frontend       # <-- Use build if you have Dockerfile in frontend/
     ports:
-      - "3000:3000"
+      - "3000:80"           # <-- React runs on port 80 in container; map it to 3000
+    environment:
+      - REACT_APP_API_URL=http://backend:5000
     depends_on:
       - backend

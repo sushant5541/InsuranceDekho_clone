@@ -35,7 +35,7 @@ const usePayment = () => {
       }
 
       // 2. Create payment order
-          const response = await fetch('http://insurance-backend:4000/api/payments/create-order', {
+          const response = await fetch(`${process.env.REACT_APP_API_URL}/api/payments/create-order`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

@@ -20,7 +20,7 @@ const UserDetail = () => {
     const fetchUser = async () => {
       try {
         const token = localStorage.getItem('token');
-        const response = await axios.get(`http://insurance-backend:4000/api/admin/users/${id}`, {
+        const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/admin/users/${id}`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         setUser(response.data);
@@ -38,7 +38,7 @@ const UserDetail = () => {
     try {
       const token = localStorage.getItem('token');
       const response = await axios.put(
-        `http://localhost:4000/api/admin/users/${id}`,
+        `${process.env.REACT_APP_API_URL}/api/admin/users/${id}`,
         updatedUser,
         { headers: { Authorization: `Bearer ${token}` } }
       );

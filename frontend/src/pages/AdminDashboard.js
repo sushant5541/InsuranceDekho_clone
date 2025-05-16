@@ -16,7 +16,7 @@ const AdminDashboard = () => {
     const fetchAdminData = async () => {
       try {
         const token = localStorage.getItem('token');
-        const response = await axios.get('http://insurance-backend:4000/api/admin/profile', {
+        const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/admin/profile`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         setAdminData(response.data);

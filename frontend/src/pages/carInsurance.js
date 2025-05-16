@@ -54,7 +54,7 @@ const CarInsurance = () => {
     const fetchInsurancePlans = async () => {
       setLoading(true);
       try {
-        const response = await fetch(`http://insurance-backend:4000/api/car-insurance/plans?type=${activeTab}`, {
+        const response = await fetch(`${process.env.REACT_APP_API_URL}/api/car-insurance/plans?type=${activeTab}`, {
           headers: {
             'Content-Type': 'application/json',
             'Accept': 'application/json'

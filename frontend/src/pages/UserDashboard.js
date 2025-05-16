@@ -25,7 +25,7 @@ const UserDashboard = () => {
           return;
         }
 
-        const response = await axios.get('http://localhost:4000/api/auth/user-policies', {
+        const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/auth/user-policies`, {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json'
@@ -82,7 +82,7 @@ const UserDashboard = () => {
     try {
       const token = localStorage.getItem('token');
       const response = await axios.delete(
-        `http://insurance-backend:4000/api/payments/${paymentId}`,
+        `${process.env.REACT_APP_API_URL}/api/payments/${paymentId}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
