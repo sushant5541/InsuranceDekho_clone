@@ -34,7 +34,7 @@ if (process.env.NODE_ENV === 'development') {
 }
 
 app.use(cors({
-  origin: 'http://3.110.51.191:3000',
+  origin: `http://${process.env.PUBLIC_IP}:3000`,
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   credentials: true,
 }));
