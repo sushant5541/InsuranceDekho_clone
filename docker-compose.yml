@@ -1,5 +1,4 @@
 version: '3'
-env_file: .env
 
 services:
   mongo:
@@ -14,7 +13,7 @@ services:
   backend:
     build: ./backend
     ports:
-      - "5000:4000"
+      - "5000:5000"
     env_file:
       - .env
       - ./backend/.env
@@ -30,15 +29,19 @@ services:
     build:
       context: ./frontend
       args:
-        REACT_APP_API_URL=http://${PUBLIC_IP}:5000
-        REACT_APP_RAZORPAY_KEY_ID=rzp_test_enSNChz4e2UlQM
+        PUBLIC_IP: ${PUBLIC_IP}
+        REACT_APP_API_URL: http://${PUBLIC_IP}:5000
+        REACT_APP_RAZORPAY_KEY_ID: rzp_test_enSNChz4e2UlQM
     ports:
-      - "3000:80"
+      - "3000:3000"
     depends_on:
       - backend
     networks:
       - mern-networks
     restart: always
+    env_file:
+      - .env
 
 networks:
   mern-networks:
+    driver: bridge
