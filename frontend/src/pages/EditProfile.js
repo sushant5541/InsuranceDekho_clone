@@ -57,7 +57,7 @@
     }
 
     const response = await axios.put(
-    `${process.env.REACT_APP_API_URL}/api/auth/profile`,
+    `http://localhost:4000/api/auth/profile`,
       {
         name: formData.name,
         gender: formData.gender,

@@ -11,7 +11,8 @@ router.get('/plans', async (req, res) => {
     
     let query = {};
     if (type) {
-      query.planType = type;
+      query.planType = new RegExp(`^${type}$`, 'i'); // Match "Comprehensive", "comprehensive", etc.
+
     }
     
     // Set limits based on plan type

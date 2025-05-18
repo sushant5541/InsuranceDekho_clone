@@ -34,7 +34,7 @@ if (process.env.NODE_ENV === 'development') {
 }
 
 app.use(cors({
-  origin: `http://${process.env.PUBLIC_IP}:3000`,
+  origin: `http://localhost:3000`,
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   credentials: true,
 }));
@@ -73,4 +73,4 @@ app.use(errorHandler);
 
 // Start server
 const PORT = process.env.PORT || 4000;
-app.listen(PORT,"0.0.0.0", () => console.log(`Server running on http://0.0.0.0:${PORT}`));
+app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));

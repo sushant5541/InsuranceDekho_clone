@@ -13,7 +13,7 @@ services:
   backend:
     build: ./backend
     ports:
-      - "5000:5000"
+      - "4000:4000"
     env_file:
       - .env
       - ./backend/.env
@@ -30,7 +30,7 @@ services:
       context: ./frontend
       args:
         PUBLIC_IP: ${PUBLIC_IP}
-        REACT_APP_API_URL: http://${PUBLIC_IP}:5000
+        REACT_APP_API_URL: http://${PUBLIC_IP}:4000
         REACT_APP_RAZORPAY_KEY_ID: rzp_test_enSNChz4e2UlQM
     ports:
       - "3000:3000"

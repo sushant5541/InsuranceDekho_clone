@@ -7,7 +7,7 @@ import usePayment from '../hooks/usePayment';
 
 
 const api = axios.create({
-  baseURL: `${process.env.REACT_APP_API_URL}/api`,
+  baseURL: `http://localhost:4000/api`,
 });
 
 const QuotePage = () => {

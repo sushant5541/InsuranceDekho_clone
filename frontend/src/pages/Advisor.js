@@ -4,7 +4,7 @@ import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 import '../styles/Advisor.css';
 const api = axios.create({
-    baseURL: `${process.env.REACT_APP_API_URL}/api`,
+    baseURL: `http://localhost:4000/api`,
 });
 
 const AdvisorsPage = () => {

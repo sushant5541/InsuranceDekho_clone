@@ -34,7 +34,7 @@ const PolicyManagement = () => {
   const [formData, setFormData] = useState(initialFormData);
 
   const api = axios.create({
-    baseURL: `${process.env.REACT_APP_API_URL}/api`,
+    baseURL: `http://localhost:4000/api`,
     headers: { Authorization: `Bearer ${token}` }
   });
 
