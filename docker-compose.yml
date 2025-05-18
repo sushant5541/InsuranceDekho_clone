@@ -2,8 +2,12 @@ version: '3'
 services:
   mongo:
     image: mongo:latest
+    container_name: mongo-container
     ports:
       - "27017:27017"
+    networks:
+      - mern-networks
+    restart: always
 
   backend:
     build: ./backend
@@ -17,6 +21,10 @@ services:
       - RAZORPAY_KEY_SECRET=dTCBH71HGxDxprdMYwYMaMHP
       - MONGO_URI=mongodb://mongo:27017/insurancedb
 
+    networks:
+      - mern-networks
+    restart: always
+
   frontend:
     build: ./frontend
     ports:
@@ -25,3 +33,6 @@ services:
       - REACT_APP_API_URL=http://backend:4000   # Docker service name + container port
     depends_on:
       - backend
+    networks:
+      - mern-networks
+    restart: always
