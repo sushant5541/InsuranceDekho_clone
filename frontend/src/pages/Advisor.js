@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Button, Modal, Form, Spinner, Alert, Badge, Card, Row, Col } from 'react-bootstrap';
+import {Button, Modal, Form, Spinner, Alert, Badge, Card, Row, Col } from 'react-bootstrap';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 import '../styles/Advisor.css';
@@ -287,9 +287,6 @@ const AdvisorsPage = () => {
                                             onClick={() => handleBookAppointment(advisor)}
                                         >
                                             Book Home Appointment
-                                        </Button>
-                                        <Button variant="outline-primary" size="sm">
-                                            Contact
                                         </Button>
                                     </div>
                                 </Card.Body>

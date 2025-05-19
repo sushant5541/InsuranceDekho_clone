@@ -1,0 +1,432 @@
+Base Styles
+.insurance-dekho-page {
+  font-family: 'Poppins', Arial, sans-serif;
+  color: #333;
+  line-height: 1.6;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 15px;
+}
+
+/* Hero Banner */
+.hero-banner {
+  background: linear-gradient(180deg, #F0F7FF 0%, #FFFFFF 100%);
+  padding: 40px 0;
+}
+
+.banner-content {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.banner-content h1 {
+  font-size: 36px;
+  font-weight: 700;
+  margin-bottom: 10px;
+  color: #1A237E;
+}
+
+.banner-content h1 span {
+  color: #3399CC;
+}
+
+.banner-content p {
+  font-size: 18px;
+  color: #666;
+  margin-bottom: 30px;
+}
+
+.insurer-logos {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 15px;
+  margin-top: 20px;
+}
+
+.insurer-card {
+  background: white;
+  border-radius: 8px;
+  padding: 15px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  width: 120px;
+  text-align: center;
+}
+
+.insurer-card img {
+  height: 40px;
+  width: auto;
+  margin-bottom: 8px;
+  object-fit: contain;
+}
+
+.insurer-card p {
+  font-size: 12px;
+  font-weight: 500;
+  color: #444;
+  margin: 0;
+}
+
+/* Quote Form */
+.quote-form {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+  padding: 25px;
+  max-width: 450px;
+  margin: 0 auto;
+}
+
+.form-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.form-header img {
+  height: 24px;
+}
+
+.form-header h2 {
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+  margin: 0;
+}
+
+.form-header h2 span {
+  color: #FF6B6B;
+}
+
+.form-body {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.form-group {
+  position: relative;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 12px 15px;
+  border: 1px solid #E0E0E0;
+  border-radius: 8px;
+  font-size: 14px;
+  transition: all 0.3s;
+}
+
+.form-group input:focus {
+  border-color: #3399CC;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(51,153,204,0.2);
+}
+
+.form-group label {
+  position: absolute;
+  left: 15px;
+  top: 12px;
+  background: white;
+  padding: 0 5px;
+  font-size: 14px;
+  color: #999;
+  transition: all 0.3s;
+  pointer-events: none;
+}
+
+.form-group input:focus + label,
+.form-group input:not(:placeholder-shown) + label {
+  top: -10px;
+  font-size: 12px;
+  color: #3399CC;
+}
+
+
+.dob-group {
+  position: relative;
+}
+
+.calendar-icon {
+  position: absolute;
+  right: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  height: 18px;
+  width: 18px;
+}
+
+.age-badge {
+  position: absolute;
+  right: 45px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 12px;
+  color: #666;
+}
+
+.phone-group {
+  display: flex;
+}
+
+.country-code {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 0 15px;
+  border: 1px solid #E0E0E0;
+  border-radius: 8px 0 0 8px;
+  background: #FAFAFA;
+  font-size: 14px;
+}
+
+.country-code img {
+  height: 12px;
+}
+
+.phone-group input {
+  border-radius: 0 8px 8px 0 !important;
+  flex: 1;
+}
+
+.income-group p {
+  font-size: 14px;
+  color: #666;
+  margin-bottom: 8px;
+}
+
+.income-options {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.income-options button {
+  flex: 1;
+  min-width: 60px;
+  padding: 8px;
+  border: 1px solid #E0E0E0;
+  border-radius: 6px;
+  background: white;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.income-options button.active {
+  border-color: #3399CC;
+  background: #F0F7FF;
+  color: #3399CC;
+  font-weight: 500;
+}
+
+.submit-btn {
+  width: 100%;
+  padding: 14px;
+  background: #3399CC;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.submit-btn:hover {
+  background: #2A87B8;
+}
+
+.arrow-animation {
+  height: 20px;
+}
+
+.form-footer {
+  text-align: center;
+}
+
+.terms-text {
+  font-size: 12px;
+  color: #999;
+  margin-bottom: 15px;
+}
+
+.terms-text a {
+  color: #3399CC;
+  text-decoration: none;
+}
+
+.whatsapp-optin {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #666;
+}
+
+.whatsapp-optin img {
+  height: 16px;
+}
+
+/* Reviews Section */
+.reviews-section {
+  padding: 40px 0;
+  background: #F8FAFC;
+}
+
+.reviews-card {
+  background: white;
+  border-radius: 12px;
+  padding: 30px;
+  text-align: center;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.google-logo {
+  height: 60px;
+  width: 60px;
+  margin: 0 auto 15px;
+}
+
+.rating-stars {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  margin-bottom: 10px;
+}
+
+.rating-stars img {
+  height: 20px;
+}
+
+.rating-stars span {
+  font-weight: 600;
+  margin-left: 8px;
+  color: #333;
+}
+
+.reviews-card h3 {
+  font-size: 20px;
+  margin: 15px 0 8px;
+  color: #1A237E;
+}
+
+.rating-text {
+  font-size: 14px;
+  color: #666;
+  margin-bottom: 15px;
+}
+
+.rating-text span {
+  font-weight: 600;
+  color: #333;
+}
+
+.reviews-link {
+  display: inline-block;
+  color: #3399CC;
+  font-size: 14px;
+  text-decoration: none;
+  margin-bottom: 20px;
+}
+
+.rate-us-btn {
+  display: inline-block;
+  padding: 10px 20px;
+  background: white;
+  border: 1px solid #3399CC;
+  border-radius: 6px;
+  color: #3399CC;
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+  transition: all 0.3s;
+}
+
+.rate-us-btn:hover {
+  background: #F0F7FF;
+}
+
+/* Plans Section */
+.plans-section {
+  padding: 40px 0;
+}
+
+.section-header {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.section-header h2 {
+  font-size: 28px;
+  color: #1A237E;
+  margin-bottom: 10px;
+}
+
+.intro-text {
+  max-width: 800px;
+  margin: 0 auto 30px;
+  text-align: center;
+  color: #666;
+  font-size: 16px;
+}
+
+.plan-highlights {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.plan-card {
+  background: white;
+  border-radius: 10px;
+  padding: 20px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+.plan-card h3 {
+  font-size: 18px;
+  color: #1A237E;
+  margin-bottom: 10px;
+}
+
+.plan-card p {
+  font-size: 14px;
+  color: #666;
+  line-height: 1.6;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+  .banner-content h1 {
+    font-size: 28px;
+  }
+  
+  .insurer-logos {
+    gap: 10px;
+  }
+  
+  .insurer-card {
+    width: 100px;
+    padding: 10px;
+  }
+  
+  .quote-form {
+    padding: 20px;
+  }
+}

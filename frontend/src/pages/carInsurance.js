@@ -1,22 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import '../styles/CarInsurance.css';
 import usePayment from '../hooks/usePayment';
-
+import Footer from '../components/Footer/Footer';
 const CarInsurance = () => {
-  const { initiatePayment, error } = usePayment();
-  const [formData, setFormData] = useState({
-    registrationNumber: '',
-    brand: '',
-    city: '',
-    year: ''
-  });
+  const { initiatePayment } = usePayment();
   const [activeTab, setActiveTab] = useState('Comprehensive');
   const [insurancePlans, setInsurancePlans] = useState([]);
   const [loading, setLoading] = useState(false);
-
-  const carBrands = ['Maruti', 'Hyundai', 'Tata', 'Mahindra', 'Honda', 'Toyota', 'Kia'];
-  const cities = ['Ahmedabad', 'Bangalore', 'Chandigarh', 'Chennai'];
-  const years = Array.from({ length: 10 }, (_, i) => new Date().getFullYear() - i);
 
   const insuranceTypes = [
     {
@@ -36,6 +26,7 @@ const CarInsurance = () => {
     }
   ];
 
+  
   useEffect(() => {
     const loadRazorpay = () => {
       return new Promise((resolve) => {
@@ -97,11 +88,6 @@ const CarInsurance = () => {
     loadRazorpay();
   }, [activeTab]);
 
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-  };
 
   const handlePayment = async (plan) => {
     console.log('Selected plan:', plan);
@@ -210,7 +196,6 @@ const CarInsurance = () => {
               </div>
             )}
 
-            <a href="#" className="see-more">See More Plans ↓</a>
           </div>
         </section>
 
@@ -254,6 +239,7 @@ const CarInsurance = () => {
           </div>
         </section>
       </div>
+      <Footer/>
     </>
   );
 };

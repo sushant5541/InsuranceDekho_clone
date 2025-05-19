@@ -3,12 +3,13 @@ import React, { useState, useEffect } from 'react';
 import '../styles/HealthInsurance.css'
 import { Link } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext'; 
+import { useAuth } from '../context/AuthContext';
+import Footer from '../components/Footer/Footer';
 
 
 
 const HealthInsurance = () => {
- const { user } = useAuth();
+    const { user } = useAuth();
 
     const plans = [
         {
@@ -57,21 +58,12 @@ const HealthInsurance = () => {
         // Add more benefits as needed
     ];
 
-    const features = [
-        {
-            title: "Covers pre- and post- hospitalisation charges",
-            description: "A health insurance policy covers your medical expenses end-to-end.",
-            icon: "https://staticimg.insurancedekho.com/strapi/Icons_Variable_a72bfa6d73.svg"
-        },
-        // Add more features as needed
-    ];
-
     const { currentUser } = useAuth();
     const navigate = useNavigate();
 
     // Initialize form data with user details if logged in
     const [formData, setFormData] = useState({
-         name: user?.name || '',
+        name: user?.name || '',
         mobile: user?.mobile || '',
         gender: 'Male',
         address: '',
@@ -120,41 +112,14 @@ const HealthInsurance = () => {
         }
 
         setErrors({});
-        navigate('/health-quote', { 
-            state: { 
+        navigate('/health-quote', {
+            state: {
                 formData,
                 user: currentUser // Pass the entire user object if needed
-            } 
+            }
         });
     };
 
-    const members = ['You'];
-    const coverageOptions = [
-        { label: '5 Lac', value: 500000 },
-        { label: '10 Lac', value: 1000000 },
-        { label: '25 Lac', value: 2500000 }
-    ];
-
-    //calculator
-    const [selectedMember, setSelectedMember] = useState('You');
-    const [age, setAge] = useState('');
-    const [pincode, setPincode] = useState('');
-    const [coverage, setCoverage] = useState(500000);
-    const [error, setError] = useState('');
-
-    const handleCalculate = () => {
-        if (!age || !pincode) {
-            setError('Please enter all required fields.');
-            return;
-        }
-        setError('');
-        alert(`Calculating price for:
-      Member: ${selectedMember},
-      Age: ${age},
-      Pincode: ${pincode},
-      Coverage: ₹${coverage.toLocaleString()}
-    `);
-    };
 
     return (
         <>
@@ -185,75 +150,80 @@ const HealthInsurance = () => {
                         </div>
 
                         <div className="quote-form">
-                            <div className="form-header">
-                                <div className="offer-tag">
-                                    <img src="https://static.insurancedekho.com/pwa/img/offerImg.svg" alt="Offer" />
-                                    <span>Get Online Discount upto <strong>25% off*</strong></span>
-                                </div>
-                                <p>Buy Health Plans from <strong>Rs. 10/day*</strong></p>
-                            </div>
+  <div className="form-header">
+    <div className="offer-tag">
+      <img src="https://static.insurancedekho.com/pwa/img/offerImg.svg" alt="Offer" />
+      <span>Get Online Discount upto <strong>25% off*</strong></span>
+    </div>
+    <p>Buy Health Plans from <strong>Rs. 10/day*</strong></p>
+  </div>
 
-                            <form onSubmit={handleSubmit}>
-                                <div className="form-group radio-group">
-                                    <label>
-                                        <input
-                                            type="radio"
-                                            name="gender"
-                                            value="male"
-                                            checked={formData.gender === 'male'}
-                                            onChange={handleChange}
-                                        />
-                                        <span>Male</span>
-                                    </label>
-                                    <label>
-                                        <input
-                                            type="radio"
-                                            name="gender"
-                                            value="female"
-                                            checked={formData.gender === 'female'}
-                                            onChange={handleChange}
-                                        />
-                                        <span>Female</span>
-                                    </label>
-                                </div>
+  <form onSubmit={handleSubmit}>
+    {/* Gender Field */}
+    <div className="form-group">
+      <label>Gender</label>
+      <div className="radio-group">
+        <label>
+          <input
+            type="radio"
+            name="gender"
+            value="male"
+            checked={formData.gender === 'male'}
+            onChange={handleChange}
+          />
+          Male
+        </label>
+        <label>
+          <input
+            type="radio"
+            name="gender"
+            value="female"
+            checked={formData.gender === 'female'}
+            onChange={handleChange}
+          />
+          Female
+        </label>
+      </div>
+    </div>
 
-                                <div className="form-group">
-                                    <input
-                                        type="text"
-                                        name="name"
-                                        placeholder="Name"
-                                        value={formData.name}
-                                        onChange={handleChange}
-                                        className={errors.name ? 'error-input' : ''}
-                                    />
-                                    {errors.name && <span className="error-message">{errors.name}</span>}
-                                </div>
+    {/* Name Field */}
+    <div className="form-group">
+      <input
+        type="text"
+        name="name"
+        placeholder=" "
+        value={formData.name}
+        onChange={handleChange}
+        className={errors.name ? 'error-input' : ''}
+      />
+      <label>Full Name</label>
+      {errors.name && <span className="error-message">{errors.name}</span>}
+    </div>
 
-                                <div className="form-group">
-                                    <input
-                                        type="tel"
-                                        name="mobile"
-                                        placeholder="Mobile Number"
-                                        value={formData.mobile}
-                                        onChange={handleChange}
-                                        className={errors.mobile ? 'error-input' : ''}
-                                    />
-                                    {errors.mobile && <span className="error-message">{errors.mobile}</span>}
-                                </div>
+    {/* Mobile Field */}
+    <div className="form-group">
+      <input
+        type="tel"
+        name="mobile"
+        placeholder=" "
+        value={formData.mobile}
+        onChange={handleChange}
+        className={errors.mobile ? 'error-input' : ''}
+      />
+      <label>Mobile Number</label>
+      {errors.mobile && <span className="error-message">{errors.mobile}</span>}
+    </div>
 
-                                <button type="submit" className="submit-btn">
-                                    View Plans
-                                </button>
+    <button type="submit" className="submit-btn">
+      View Plans
+    </button>
 
-                                <p className="terms">
-                                    By clicking, I agree to <a href="/terms">terms & conditions</a> and <a href="/privacy">privacy policy</a>.
-                                </p>
-                                <p className="terms">
-                                    <Link to="/Renew">Renew Now </Link>
-                                </p>
-                            </form>
-                        </div>
-                    </div>
+    <p className="terms">
+      By clicking, I agree to <a href="/terms">terms & conditions</a> and <a href="/privacy">privacy policy</a>.
+    </p>
+  </form>
+</div>
+</div>
                 </section>
 
                 {/* Best Plans Section */}
@@ -329,75 +299,8 @@ const HealthInsurance = () => {
                     </div>
                 </section>
 
-                {/* Calculator Section */}
-                <section className="health-wrapper" id="calculator">
-                    <h2>Health Insurance Calculator</h2>
-
-                    <div className="calculator-card">
-                        <h3>Whom do you want the insurance for?</h3>
-                        <div className="members-list">
-                            {members.map((member) => (
-                                <div
-                                    key={member}
-                                    className={`member-tag ${selectedMember === member ? 'active' : ''}`}
-                                    onClick={() => setSelectedMember(member)}
-                                >
-                                    {member}
-                                </div>
-                            ))}
-                        </div>
-
-                        <div className="input-group">
-                            <label htmlFor="age">Enter Your Age</label>
-                            <input
-                                id="age"
-                                type="number"
-                                value={age}
-                                onChange={(e) => setAge(e.target.value)}
-                            />
-                        </div>
-
-                        <div className="input-group">
-                            <label htmlFor="pincode">Enter Area Pincode</label>
-                            <input
-                                id="pincode"
-                                type="text"
-                                value={pincode}
-                                onChange={(e) => setPincode(e.target.value)}
-                            />
-                        </div>
-
-                        <h3>Choose required coverage for your family</h3>
-                        <div className="coverage-options">
-                            {coverageOptions.map((opt) => (
-                                <label key={opt.value} className="coverage-option">
-                                    <input
-                                        type="radio"
-                                        name="coverage"
-                                        value={opt.value}
-                                        checked={coverage === opt.value}
-                                        onChange={() => setCoverage(opt.value)}
-                                    />
-                                    {opt.label}
-                                </label>
-                            ))}
-                        </div>
-
-                        {error && <div className="error">{error}</div>}
-
-                        <button className="calculate-btn" onClick={handleCalculate}>
-                            Calculate Price
-                        </button>
-
-                        <p className="disclaimer">
-                            <strong>Disclaimer:</strong> Actual Premium might vary based on your location, age and number of members.
-                        </p>
-                    </div>
-                </section>
-
-
-                {/* Features Section */}
             </div>
+            <Footer />
         </>
     );
 };

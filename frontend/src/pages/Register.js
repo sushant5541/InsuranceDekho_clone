@@ -4,40 +4,72 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import axios from 'axios';
 
 const Register = () => {
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [gender, setGender] = useState('');
-  const [dob, setDob] = useState('');
-  const [mobile, setMobile] = useState('');
-  const [password, setPassword] = useState('');
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    password: '',
+    gender: '',
+    dob: '',
+    mobile: ''
+  });
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    try {
-      const res= await axios.post(`http://localhost:4000/api/auth/register`, {
-        name,
-        email,
-        password,
-        gender,
-        dob,
-        mobile,
-      });
+    setError('');
+    setSuccess('');
+    setIsSubmitting(true);
 
-      setSuccess('Registration successful! Please login.');
-      setName('');
-      setEmail('');
-      setPassword('');
-      console.log(" Registration Success:", res.data);
-      // Optionally auto-login after registration
-      // localStorage.setItem('token', response.data.token);
+    try {
+      const res = await axios.post(`http://localhost:4000/api/auth/register`, formData);
+      
+      setSuccess('Registration successful! Redirecting to login...');
+      setFormData({
+        name: '',
+        email: '',
+        password: '',
+        gender: '',
+        dob: '',
+        mobile: ''
+      });
+      
       setTimeout(() => {
         navigate('/login');
-      }, 1000);
+      }, 1500);
+      
     } catch (err) {
-      console.error(" Registration Error:", err.response?.data || err.message);
+      if (err.response) {
+        // Handle different error responses from backend
+        if (err.response.status === 400) {
+          // Validation error
+          setError(err.response.data.message || 'Please fill all fields correctly');
+        } else if (err.response.status === 409) {
+          // User already exists
+          setError('This email is already registered. Please login instead.');
+        } else {
+          // Other server errors
+          setError('Registration failed. Please try again later.');
+        }
+      } else if (err.request) {
+        // The request was made but no response was received
+        setError('Network error. Please check your connection.');
+      } else {
+        // Something happened in setting up the request
+        setError('An error occurred. Please try again.');
+      }
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -59,8 +91,9 @@ const Register = () => {
                     type="text"
                     className="form-control"
                     id="name"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
+                    name="name"
+                    value={formData.name}
+                    onChange={handleChange}
                     required
                   />
                 </div>
@@ -71,8 +104,9 @@ const Register = () => {
                     type="email"
                     className="form-control"
                     id="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    name="email"
+                    value={formData.email}
+                    onChange={handleChange}
                     required
                   />
                 </div>
@@ -83,18 +117,21 @@ const Register = () => {
                     type="password"
                     className="form-control"
                     id="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
+                    name="password"
+                    value={formData.password}
+                    onChange={handleChange}
                     required
                   />
                 </div>
+
                 <div className="mb-3">
                   <label htmlFor="gender" className="form-label">Gender</label>
                   <select
                     className="form-control"
                     id="gender"
-                    value={gender}
-                    onChange={(e) => setGender(e.target.value)}
+                    name="gender"
+                    value={formData.gender}
+                    onChange={handleChange}
                   >
                     <option value="">Select</option>
                     <option value="Male">Male</option>
@@ -109,8 +146,9 @@ const Register = () => {
                     type="date"
                     className="form-control"
                     id="dob"
-                    value={dob}
-                    onChange={(e) => setDob(e.target.value)}
+                    name="dob"
+                    value={formData.dob}
+                    onChange={handleChange}
                   />
                 </div>
 
@@ -120,14 +158,19 @@ const Register = () => {
                     type="text"
                     className="form-control"
                     id="mobile"
-                    value={mobile}
-                    onChange={(e) => setMobile(e.target.value)}
+                    name="mobile"
+                    value={formData.mobile}
+                    onChange={handleChange}
                   />
                 </div>
 
                 <div className="d-grid mb-3">
-                  <button type="submit" className="btn btn-warning text-white">
-                    Register
+                  <button 
+                    type="submit" 
+                    className="btn btn-warning text-white"
+                    disabled={isSubmitting}
+                  >
+                    {isSubmitting ? 'Registering...' : 'Register'}
                   </button>
                 </div>
 

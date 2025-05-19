@@ -3,7 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import '../styles/UserDashboard.css';
 import { useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
-import { Table, Card, Alert, Spinner, Badge, Button } from 'react-bootstrap';
+import { Table, Card, Spinner, Badge, Button } from 'react-bootstrap';
 import { format } from 'date-fns';
 
 const UserDashboard = () => {
@@ -43,7 +43,6 @@ const UserDashboard = () => {
 
           setPayments(formattedPayments);
           
-          // Check if we should auto-expand and print
           if (location.state?.autoPrint && formattedPayments.length > 0) {
             setExpandedPayment(formattedPayments[0]._id);
             setShouldPrint(true);
@@ -77,7 +76,12 @@ const UserDashboard = () => {
   };
 
   const handleDeletePayment = async (paymentId) => {
-    if (!window.confirm('Are you sure you want to cancel this policy?')) return;
+    const isCreatedPolicy = payments.find(p => p._id === paymentId)?.status === 'created';
+    const confirmMessage = isCreatedPolicy 
+      ? 'Are you sure you want to cancel this policy application?'
+      : 'Are you sure you want to cancel this active policy?';
+
+    if (!window.confirm(confirmMessage)) return;
 
     try {
       const token = localStorage.getItem('token');
@@ -88,12 +92,39 @@ const UserDashboard = () => {
 
       if (response.data.success) {
         setPayments(prev => prev.filter(payment => payment._id !== paymentId));
-        alert('Policy cancelled successfully');
+        alert(`Policy ${isCreatedPolicy ? 'application' : ''} cancelled successfully`);
       }
     } catch (error) {
       console.error('Error cancelling policy:', error);
       alert(`Failed to cancel policy: ${error.response?.data?.message || error.message}`);
     }
+  };
+
+  const handleClaimPolicy = (policy) => {
+    let productPage = '/';
+    switch (policy.planType?.toLowerCase()) {
+      case 'health':
+        productPage = '/health-insurance';
+        break;
+      case 'car':
+        productPage = '/car-insurance';
+        break;
+      case 'bike':
+        productPage = '/bike-insurance';
+        break;
+      case 'life':
+        productPage = '/life-insurance';
+        break;
+      default:
+        productPage = '/';
+    }
+
+    navigate(productPage, {
+      state: {
+        prefillPolicy: policy,
+        fromClaim: true
+      }
+    });
   };
 
   const handlePrintPolicy = (payment) => {
@@ -305,13 +336,36 @@ const UserDashboard = () => {
                               >
                                 {expandedPayment === payment._id ? 'Hide' : 'Details'}
                               </Button>
+                              
+                              {/* Action buttons for created policies */}
+                              {payment.status === 'created' && (
+                                <>
+                                  <Button
+                                    variant="outline-success"
+                                    size="sm"
+                                    onClick={() => handleClaimPolicy(payment)}
+                                    className="me-2"
+                                  >
+                                    Claim
+                                  </Button>
+                                  <Button
+                                    variant="outline-danger"
+                                    size="sm"
+                                    onClick={() => handleDeletePayment(payment._id)}
+                                  >
+                                    Cancel
+                                  </Button>
+                                </>
+                              )}
+                              
+                              {/* Cancel button for active policies */}
                               {payment.status === 'captured' && (
                                 <Button
                                   variant="outline-danger"
                                   size="sm"
                                   onClick={() => handleDeletePayment(payment._id)}
                                 >
-                                  Cancel
+                                  Cancel Policy
                                 </Button>
                               )}
                             </td>

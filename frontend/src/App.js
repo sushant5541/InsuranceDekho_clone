@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import  { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from './context/AuthContext';
 import PrivateRoute from './components/PrivateRoute';
 import Home from './pages/Home';
@@ -10,8 +10,7 @@ import ForgotPassword from './pages/ForgotPassword';
 import CarInsurance from './pages/carInsurance';
 import BikeInsurance from './pages/bikeInsurance';
 import HealthInsurance from './pages/healthinsurance';
-import LifeInsurance from './pages/lifeInsurance';
-import TermInsurance from './pages/termInsurance';
+import LifeInsurance from './pages/LifeInsurnace';
 import PremiumDetails from './pages/CheckPremium';
 import QuotePage from './pages/HealthQuote';
 import AdminDashboard from './pages/AdminDashboard';
@@ -29,7 +28,7 @@ import HealthInsuranceNews from './pages/HealthnsuranceNews';
 
 
 function App() {
-  const { isAuthenticated, isAdmin } = useAuth();
+  const {  isAdmin } = useAuth();
 
   return (
     <Routes>
@@ -73,9 +72,9 @@ function App() {
       <Route path="/car-insurance" element={<CarInsurance />} />
       <Route path="/bike-insurance" element={<BikeInsurance />} />
       <Route path="/health-insurance" element={<HealthInsurance />} />
+      <Route path="/life-insurance" element={<LifeInsurance />} />
       <Route path="/check-premium" element={<PremiumDetails />} />
       <Route path="/health-quote" element={<QuotePage />} />
-      <Route path="/term-insurance" element={<TermInsurance />} />
       <Route path="/car-insurance/news" element={<CarInsuranceNews />} />
       <Route path="/bike-insurance/news" element={<BikeInsuranceNews />} />
       <Route path="/Health-insurance/news" element={<HealthInsuranceNews />} />

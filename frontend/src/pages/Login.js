@@ -145,11 +145,9 @@ const Login = () => {
                 {!isAdminLogin && (
                   <div className="text-center">
                     <p className="mb-1">
-                      Don't have an account? <Link to="/register">Register</Link>
+                      Don't have an account?  Please <Link to="/register">Register</Link>
                     </p>
-                    <p>
-                      <Link to="/forgot-password">Forgot password?</Link>
-                    </p>
+
                   </div>
                 )}
               </form>
