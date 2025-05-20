@@ -7,7 +7,9 @@ services:
     volumes:
       - mongo-data:/data/db
     networks:
-      - mern-networks
+      mern-networks:
+        aliases:
+          - mongo
     restart: always
 
   backend:
@@ -21,17 +23,25 @@ services:
     depends_on:
       - mongo
     networks:
-      - mern-networks
+      mern-networks:
+        aliases:
+          - backend
     restart: always
 
   frontend:
-    build: ./frontend
+    build:
+      context: ./frontend
+      args:
+        REACT_APP_API_URL: "http://backend:4000"  # Using service name for internal communication
+        REACT_APP_RAZORPAY_KEY_ID: "rzp_test_enSNChz4e2UlQM"
     ports:
-      - "3000:80"  # If using Nginx, map to 80, otherwise 3000:3000
+      - "3000:80"
     depends_on:
       - backend
     networks:
-      - mern-networks
+      mern-networks:
+        aliases:
+          - frontend
     restart: always
 
 networks:

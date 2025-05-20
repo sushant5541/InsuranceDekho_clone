@@ -34,9 +34,13 @@ if (process.env.NODE_ENV === 'development') {
 }
 
 app.use(cors({
-  origin: [`http://localhost:3000`, `http://${process.env.PUBLIC_IP}:3000`],
+  origin: [
+    'http://localhost:3000',
+    `http://${process.env.PUBLIC_IP}:3000`,
+    `http://${process.env.PUBLIC_IP}:80`
+  ],
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
-  credentials: true,
+  credentials: true
 }));
 
 app.use(express.json());
