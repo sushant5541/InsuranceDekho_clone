@@ -26,7 +26,7 @@ const PolicyForm = () => {
       const fetchPolicy = async () => {
         try {
           const token = localStorage.getItem('token');
-          const response = await axios.get(`http://localhost:4000/api/policies/${id}`, {
+          const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/policies/${id}`, {
             headers: { Authorization: `Bearer ${token}` }
           });
           setPolicy(response.data);
@@ -56,11 +56,11 @@ const PolicyForm = () => {
       const token = localStorage.getItem('token');
       
       if (id) {
-        await axios.put(`http://localhost:4000/api/policies/${id}`, policy, {
+        await axios.put(`${process.env.REACT_APP_API_URL}/api/policies/${id}`, policy, {
           headers: { Authorization: `Bearer ${token}` }
         });
       } else {
-        await axios.post('http://localhost:4000/api/policies', policy, {
+        await axios.post(`${process.env.REACT_APP_API_URL}/api/policies`, policy, {
           headers: { Authorization: `Bearer ${token}` }
         });
       }

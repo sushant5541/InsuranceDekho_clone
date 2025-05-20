@@ -17,7 +17,7 @@ const DashboardView = () => {
       throw new Error('No authentication token found');
     }
     
-    const response = await axios.get(`http://localhost:4000/api/admin/users-with-policies`, {
+    const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/admin/users-with-policies`, {
       headers: { Authorization: `Bearer ${token}` }
     });
     setUsers(response.data);

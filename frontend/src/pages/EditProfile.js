@@ -66,7 +66,7 @@ const EditProfile = () => {
         : null;
 
       const response = await axios.put(
-        `http://localhost:4000/api/auth/profile`,
+        `${process.env.REACT_APP_API_URL}/api/auth/profile`,
         {
           name: formData.name,
           gender: formData.gender,

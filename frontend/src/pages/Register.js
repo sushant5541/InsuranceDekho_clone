@@ -32,7 +32,7 @@ const Register = () => {
     setIsSubmitting(true);
 
     try {
-      const res = await axios.post(`http://localhost:4000/api/auth/register`, formData);
+      const res = await axios.post(`${process.env.REACT_APP_API_URL}/api/auth/register`, formData);
       
       setSuccess('Registration successful! Redirecting to login...');
       setFormData({

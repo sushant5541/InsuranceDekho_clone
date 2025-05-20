@@ -40,7 +40,7 @@ const handleSubmit = async (e) => {
     }
 
     const response = await axios.put(
-      `http://localhost:4000/api/auth/forgot-password`,
+      `${process.env.REACT_APP_API_URL}/api/auth/forgot-password`,
       {
         email: normalizedEmail,
         password: trimmedPassword
