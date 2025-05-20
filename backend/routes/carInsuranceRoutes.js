@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const CarInsurancePlan = require('../models/CarInsurance');
+const CarInsurancePlan = require('../models/CarInsurancePlan');
 
 // @route   GET /api/car-insurance/plans
 // @desc    Get car insurance plans based on type with limit

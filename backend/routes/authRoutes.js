@@ -6,7 +6,7 @@ const { protect, admin } = require('../middleware/auth');
 const User = require('../models/User'); 
 const Payment = require('../models/Payment');
 const BikeInsurancePlan = require('../models/BikeInsurancePlan');
-const CarInsurancePlan = require('../models/CarInsurance');
+const CarInsurancePlan = require('../models/CarInsurancePlan');
 const HealthInsurancePlan = require('../models/HealthInsurancePlan');
 
 router.post('/register', register);

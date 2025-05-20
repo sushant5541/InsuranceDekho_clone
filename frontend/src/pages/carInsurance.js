@@ -2,11 +2,20 @@ import React, { useState, useEffect } from 'react';
 import '../styles/CarInsurance.css';
 import usePayment from '../hooks/usePayment';
 import Footer from '../components/Footer/Footer';
+
 const CarInsurance = () => {
   const { initiatePayment } = usePayment();
   const [activeTab, setActiveTab] = useState('Comprehensive');
   const [insurancePlans, setInsurancePlans] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [showForm, setShowForm] = useState(false);
+  const [selectedPlan, setSelectedPlan] = useState(null);
+  const [formData, setFormData] = useState({
+    carNumber: '',
+    mobileNumber: '',
+    carBrand: '',
+    purchasedYear: '',
+  });
 
   const insuranceTypes = [
     {
@@ -26,7 +35,6 @@ const CarInsurance = () => {
     }
   ];
 
-  
   useEffect(() => {
     const loadRazorpay = () => {
       return new Promise((resolve) => {
@@ -88,27 +96,39 @@ const CarInsurance = () => {
     loadRazorpay();
   }, [activeTab]);
 
+  const handleBuyNowClick = (plan) => {
+    setSelectedPlan(plan);
+    setShowForm(true);
+  };
 
-  const handlePayment = async (plan) => {
-    console.log('Selected plan:', plan);
+  const handleFormSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
     
-    if (!plan || !plan._id || !plan.price) {
-      console.error('Plan validation failed:', {
-        hasPlan: !!plan,
-        hasId: !!plan?._id,
-        hasPrice: !!plan?.price,
-        plan: plan
-      });
-      alert('Invalid plan selected');
+    // Validate form data
+    if (!formData.carNumber || !formData.mobileNumber || !formData.carBrand || !formData.purchasedYear) {
+      alert('Please fill all the fields');
+      setLoading(false);
       return;
     }
 
     try {
-      await initiatePayment(plan, 'car');
+      await initiatePayment(selectedPlan, 'car', formData);
+      setShowForm(false);
     } catch (error) {
       console.error('Payment failed:', error);
       alert(error.message || 'Payment initialization failed');
+    } finally {
+      setLoading(false);
     }
+  };
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
   };
 
   return (
@@ -168,7 +188,7 @@ const CarInsurance = () => {
                         {plan.discount && <span className="discount-badge">{plan.discount}</span>}
                       </div>
                       <button
-                        onClick={() => handlePayment(plan)}
+                        onClick={() => handleBuyNowClick(plan)}
                         disabled={loading}
                         className="check-price-btn"
                       >
@@ -198,6 +218,81 @@ const CarInsurance = () => {
 
           </div>
         </section>
+
+        {/* Form Modal */}
+        {showForm && (
+          <div className="form-modal-overlay">
+            <div className="form-modal">
+              <h3>Enter Your Car Details</h3>
+              <form onSubmit={handleFormSubmit}>
+                <label>Car Number</label>
+                <div className="form-group">
+                  
+                  <input
+                    type="text"
+                    name="carNumber"
+                    value={formData.carNumber}
+                    onChange={handleInputChange}
+                    placeholder="eg.MH09S1212"
+                    required
+                  />
+                </div>
+                 <label>Mobile Number</label>
+                <div className="form-group">
+                  <input
+                    type="tel"
+                    name="mobileNumber"
+                    value={formData.mobileNumber}
+                    onChange={handleInputChange}
+                    placeholder="eg.9858765332"
+                    required
+                  />
+                </div>
+                  <label>Car Brand</label>
+                <div className="form-group">
+                  <input
+                    type="text"
+                    name="carBrand"
+                    value={formData.carBrand}
+                    onChange={handleInputChange}
+                    placeholder="eg. Mahindra, Toyota.."
+                    required
+                  />
+                </div>
+                                  <label>Purchased Year</label>
+                <div className="form-group">
+                  <input
+                    type="number"
+                    name="purchasedYear"
+                    value={formData.purchasedYear}
+                    onChange={handleInputChange}
+                    placeholder="Enter purchased year"
+                    min="1900"
+                    max={new Date().getFullYear()}
+                    required
+                  />
+                </div>
+                <div className="form-actions">
+                  <button
+                    type="button"
+                    className="cancel-btn"
+                    onClick={() => setShowForm(false)}
+                    disabled={loading}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="submit-btn"
+                    disabled={loading}
+                  >
+                    {loading ? 'Processing...' : 'Proceed to Payment'}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
 
         {/* Insurance Types */}
         <section className="insurance-types">

@@ -4,12 +4,20 @@ import usePayment from '../hooks/usePayment';
 import Footer from '../components/Footer/Footer';
 
 const BikeInsurance = () => {
-  const { initiatePayment} = usePayment();
-  
+  const { initiatePayment } = usePayment();
   const [activeTab, setActiveTab] = useState('Comprehensive');
   const [insurancePlans, setInsurancePlans] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [showForm, setShowForm] = useState(false);
+  const [selectedPlan, setSelectedPlan] = useState(null);
+  const [formData, setFormData] = useState({
+    bikeNumber: '',
+    mobileNumber: '',
+    bikeBrand: '',
+    purchasedYear: '',
+  });
 
+    
   const insuranceTypes = [
     {
       name: 'Comprehensive',
@@ -28,91 +36,101 @@ const BikeInsurance = () => {
     }
   ];
 
-useEffect(() => {
-  const loadRazorpay = () => {
-    return new Promise((resolve) => {
-      const script = document.createElement('script');
-      script.src = 'https://checkout.razorpay.com/v1/checkout.js';
-      script.onload = () => {
-        resolve(true);
-      };
-      script.onerror = () => {
-        resolve(false);
-      };
-      document.body.appendChild(script);
-    });
-  };
-  const fetchInsurancePlans = async () => {
-    setLoading(true);
-    try {
-      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/bikeInsurance/plans?type=${activeTab}`, {
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        }
+  useEffect(() => {
+    const loadRazorpay = () => {
+      return new Promise((resolve) => {
+        const script = document.createElement('script');
+        script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+        script.onload = () => {
+          resolve(true);
+        };
+        script.onerror = () => {
+          resolve(false);
+        };
+        document.body.appendChild(script);
       });
+    };
 
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`Server responded with ${response.status}: ${errorText}`);
-      }
+    const fetchInsurancePlans = async () => {
+      setLoading(true);
+      try {
+        const response = await fetch(`${process.env.REACT_APP_API_URL}/api/bikeInsurance/plans?type=${activeTab}`, {
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          }
+        });
 
-      const contentType = response.headers.get('content-type');
-      if (!contentType || !contentType.includes('application/json')) {
-        const responseData = await response.text();
-        console.error('Received non-JSON response:', responseData);
-        throw new Error('Received non-JSON response from server');
-      }
+        if (!response.ok) {
+          const errorText = await response.text();
+          throw new Error(`Server responded with ${response.status}: ${errorText}`);
+        }
 
-      const data = await response.json();
-      console.log('API Response:', data); // Add this to debug
-      
-      if (data.success) {
-        // Ensure the plans have _id and price properties
-        const validatedPlans = data.plans.map(plan => ({
-          ...plan,
-          _id: plan._id || plan.id, // Handle both _id and id
-          price: plan.price || '₹0' // Ensure price exists
-        }));
-        setInsurancePlans(validatedPlans);
-      } else {
-        console.error('API returned unsuccessful response:', data);
+        const contentType = response.headers.get('content-type');
+        if (!contentType || !contentType.includes('application/json')) {
+          const responseData = await response.text();
+          console.error('Received non-JSON response:', responseData);
+          throw new Error('Received non-JSON response from server');
+        }
+
+        const data = await response.json();
+        console.log('API Response:', data);
+        
+        if (data.success) {
+          const validatedPlans = data.plans.map(plan => ({
+            ...plan,
+            _id: plan._id || plan.id,
+            price: plan.price || '₹0'
+          }));
+          setInsurancePlans(validatedPlans);
+        } else {
+          console.error('API returned unsuccessful response:', data);
+        }
+      } catch (error) {
+        console.error('Error fetching insurance plans:', error);
+      } finally {
+        setLoading(false);
       }
+    };
+
+    fetchInsurancePlans();
+    loadRazorpay();
+  }, [activeTab]);
+
+  const handleBuyNowClick = (plan) => {
+    setSelectedPlan(plan);
+    setShowForm(true);
+  };
+
+  const handleFormSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    
+    // Validate form data
+    if (!formData.bikeNumber || !formData.mobileNumber || !formData.bikeBrand || !formData.purchasedYear) {
+      alert('Please fill all the fields');
+      setLoading(false);
+      return;
+    }
+
+    try {
+      await initiatePayment(selectedPlan, 'bike', formData);
+      setShowForm(false);
     } catch (error) {
-      console.error('Error fetching insurance plans:', error);
+      console.error('Payment failed:', error);
+      alert(error.message || 'Payment initialization failed');
     } finally {
       setLoading(false);
     }
   };
 
-  fetchInsurancePlans();
-  loadRazorpay()
-}, [activeTab],[]);
-
-
-const handlePayment = async (plan) => {
-  console.log('Selected plan:', plan); // Add this to debug
-  
-  if (!plan || !plan._id || !plan.price) {
-    console.error('Plan validation failed:', {
-      hasPlan: !!plan,
-      hasId: !!plan?._id,
-      hasPrice: !!plan?.price,
-      plan: plan
-    });
-    alert('Invalid plan selected');
-    return;
-  }
-
-  try {
-    await initiatePayment(plan, 'bike');
-  } catch (error) {
-    console.error('Payment failed:', error);
-    alert(error.message || 'Payment initialization failed');
-  }
-};
-
-
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
 
   return (
     <>
@@ -171,7 +189,7 @@ const handlePayment = async (plan) => {
                         {plan.discount && <span className="discount-badge">{plan.discount}</span>}
                       </div>
                       <button
-                        onClick={() => handlePayment(plan)}
+                        onClick={() => handleBuyNowClick(plan)}
                         disabled={loading}
                         className="check-price-btn"
                       >
@@ -198,9 +216,82 @@ const handlePayment = async (plan) => {
                 ))}
               </div>
             )}
-
           </div>
         </section>
+
+        {/* Form Modal */}
+        {showForm && (
+          <div className="form-modal-overlay">
+            <div className="form-modal">
+              <h3>Enter Your Bike Details</h3>
+              <form onSubmit={handleFormSubmit}>
+                <label>Bike Number</label>
+                <div className="form-group">
+                  <input
+                    type="text"
+                    name="bikeNumber"
+                    value={formData.bikeNumber}
+                    onChange={handleInputChange}
+                    placeholder="eg. MH09S1212"
+                    required
+                  />
+                </div>
+                <label>Mobile Number</label>
+                <div className="form-group">
+                  <input
+                    type="tel"
+                    name="mobileNumber"
+                    value={formData.mobileNumber}
+                    onChange={handleInputChange}
+                    placeholder="eg. 9858765332"
+                    required
+                  />
+                </div>
+                <label>Bike Brand</label>
+                <div className="form-group">
+                  <input
+                    type="text"
+                    name="bikeBrand"
+                    value={formData.bikeBrand}
+                    onChange={handleInputChange}
+                    placeholder="eg. Bajaj, Honda.."
+                    required
+                  />
+                </div>
+                <label>Purchased Year</label>
+                <div className="form-group">
+                  <input
+                    type="number"
+                    name="purchasedYear"
+                    value={formData.purchasedYear}
+                    onChange={handleInputChange}
+                    placeholder="Enter purchased year"
+                    min="1900"
+                    max={new Date().getFullYear()}
+                    required
+                  />
+                </div>
+                <div className="form-actions">
+                  <button
+                    type="button"
+                    className="cancel-btn"
+                    onClick={() => setShowForm(false)}
+                    disabled={loading}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="submit-btn"
+                    disabled={loading}
+                  >
+                    {loading ? 'Processing...' : 'Proceed to Payment'}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
 
         {/* Insurance Types */}
         <section className="insurance-types">

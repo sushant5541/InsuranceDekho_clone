@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { protect, admin } = require('../middleware/auth');
 const HealthInsurancePlan = require('../models/HealthInsurancePlan');
-const CarInsurancePlan = require('../models/CarInsurance');
+const CarInsurancePlan = require('../models/CarInsurancePlan');
 const BikeInsurancePlan = require('../models/BikeInsurancePlan');
 
 // Health Insurance Plans

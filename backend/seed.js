@@ -9,7 +9,7 @@ const Advisor = require('./models/Advisor');
 const Policy = require('./models/Policy');
 const HealthInsurancePlan = require('./models/HealthInsurancePlan');
 const BikeInsurancePlan = require('./models/BikeInsurancePlan');
-const CarInsurancePlan = require('./models/CarInsurance')
+const CarInsurancePlan = require('./models/CarInsurancePlan')
 
 // Ensure Mongo URI is available
 const MONGO_URI = process.env.MONGO_URL;

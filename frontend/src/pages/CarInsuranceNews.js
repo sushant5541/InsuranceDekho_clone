@@ -52,6 +52,7 @@ const CarInsuranceNews = () => {
       author: "Siddharth Malik"
     }
   ];
+  
 
   return (
     

@@ -6,7 +6,7 @@ const User = require('../models/User');
 const Policy = require('../models/Policy');
 const Payment = require('../models/Payment');
 const BikeInsurancePlan = require('../models/BikeInsurancePlan');
-const CarInsurancePlan = require('../models/CarInsurance');
+const CarInsurancePlan = require('../models/CarInsurancePlan');
 const HealthInsurancePlan = require('../models/HealthInsurancePlan');
 
 
@@ -79,5 +79,7 @@ router.get('/users-with-policies', protect, admin, async (req, res) => {
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 });
+
+
 
 module.exports = router;
