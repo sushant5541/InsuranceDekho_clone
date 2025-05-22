@@ -23,46 +23,47 @@ const usePayment = () => {
   };
 
   const initiatePayment = async (plan, planType, formSubmissionId) => {
-    setLoading(true);
-    setError(null);
-    const token = localStorage.getItem('token');
+  setLoading(true);
+  setError(null);
+  const token = localStorage.getItem('token');
 
-    try {
-      // 1. Load Razorpay SDK
-      const razorpayLoaded = await loadRazorpayScript();
-      if (!razorpayLoaded) {
-        throw new Error('Failed to load Razorpay SDK. Please check your internet connection.');
-      }
+  try {
+    // 1. Load Razorpay SDK
+    const razorpayLoaded = await loadRazorpayScript();
+    if (!razorpayLoaded) {
+      throw new Error('Failed to load Razorpay SDK. Please check your internet connection.');
+    }
 
-      // 2. Create payment order
-      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/payments/create-order`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          amount: parseInt((plan.price || '0').replace(/\D/g, '')),
-          planId: plan._id || plan.id,
-          planType: planType.toLowerCase(),
-          formId: formSubmissionId // Add form submission ID to the payment order
-        }),
-      });
+    // 2. Create payment order
+    const response = await fetch(`${process.env.REACT_APP_API_URL}/api/payments/create-order`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        amount: parseInt((plan.price || '0').replace(/\D/g, '')),
+        planId: plan._id || plan.id,
+        planType: planType.toLowerCase(),
+        formId: formSubmissionId,
+      }),
+    });
 
-      if (response.status === 401) {
-        logout();
-        window.location.href = `/login?redirect=${encodeURIComponent(window.location.pathname)}`;
-        return;
-      }
+    if (response.status === 401) {
+      logout();
+      window.location.href = `/login?redirect=${encodeURIComponent(window.location.pathname)}`;
+      return { success: false, message: 'Unauthorized' };
+    }
 
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || errorData.error || 'Payment processing failed');
-      }
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || errorData.error || 'Payment processing failed');
+    }
 
-      const { order } = await response.json();
+    const { order } = await response.json();
 
-      // 3. Initialize Razorpay payment
+    // 3. Initialize Razorpay payment and return a Promise
+    return new Promise((resolve) => {
       const options = {
         key: process.env.REACT_APP_RAZORPAY_KEY_ID || 'rzp_test_enSNChz4e2UlQM',
         amount: order.amount,
@@ -85,12 +86,12 @@ const usePayment = () => {
                 razorpay_signature: response.razorpay_signature,
                 planId: plan._id || plan.id,
                 planType: planType.toLowerCase(),
-                formId: formSubmissionId // Include form ID in verification
+                formId: formSubmissionId,
               }),
             });
 
             const { success, message, payment } = await verification.json();
-            
+
             if (success) {
               // Update form with payment ID
               await fetch(`${process.env.REACT_APP_API_URL}/api/bike-insurance-form/${formSubmissionId}/payment`, {
@@ -100,15 +101,15 @@ const usePayment = () => {
                   'Authorization': `Bearer ${token}`,
                 },
                 body: JSON.stringify({
-                  paymentId: payment._id
+                  paymentId: payment._id,
                 }),
               });
             }
 
-            alert(success ? 'Payment successful!' : message || 'Payment verification failed');
+            resolve({ success, paymentId: payment?._id, message });
           } catch (err) {
             console.error('Verification error:', err);
-            alert('Error verifying payment. Please contact support.');
+            resolve({ success: false, message: 'Error verifying payment' });
           }
         },
         prefill: {
@@ -123,19 +124,18 @@ const usePayment = () => {
 
       const rzp = new window.Razorpay(options);
       rzp.on('payment.failed', function (response) {
-        alert(`Payment failed: ${response.error.description}`);
-        console.error('Payment failed:', response.error);
+        resolve({ success: false, message: response.error.description });
       });
-      
       rzp.open();
-    } catch (error) {
-      setError(error.message);
-      console.error('Payment Error:', error);
-      throw error;
-    } finally {
-      setLoading(false);
-    }
-  };
+    });
+  } catch (error) {
+    setError(error.message);
+    console.error('Payment Error:', error);
+    return { success: false, message: error.message };
+  } finally {
+    setLoading(false);
+  }
+};
 
   return { initiatePayment, loading, error };
 };

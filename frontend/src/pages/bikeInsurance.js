@@ -8,16 +8,19 @@ const BikeInsurance = () => {
   const [activeTab, setActiveTab] = useState('Comprehensive');
   const [insurancePlans, setInsurancePlans] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [showForm, setShowForm] = useState(false);
+  const [showPlans, setShowPlans] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState(null);
+  const [formErrors, setFormErrors] = useState({});
   const [formData, setFormData] = useState({
     bikeNumber: '',
     mobileNumber: '',
     bikeBrand: '',
+    biketype: '',
     purchasedYear: '',
   });
+  const [paymentInProgress, setPaymentInProgress] = useState(false);
+  const [insuranceStatus, setInsuranceStatus] = useState(null);
 
-    
   const insuranceTypes = [
     {
       name: 'Comprehensive',
@@ -30,11 +33,20 @@ const BikeInsurance = () => {
       description: 'Mandatory coverage for third-party injuries, death or property damage caused by your vehicle.'
     },
     {
-      name: 'Standalone Own Damage',
+      name: 'Own Damage',
       icon: 'https://static.insurancedekho.com/pwa/img/ic_thirdparty.svg',
       description: 'Covers damages to your own vehicle from accidents, natural disasters, theft, fire, etc.'
     }
   ];
+
+  const [bikeBrands] = useState([
+    'Honda', 'Kawasaki', 'Yamaha', 'Hero', 'Royal Enfield',
+    'KTM', 'Suzuki', 'Bajaj', 'TVS', 'Jawa'
+  ]);
+
+  const [biketypes] = useState([
+    'Petrol', 'Diesel'
+  ]);
 
   useEffect(() => {
     const loadRazorpay = () => {
@@ -52,6 +64,8 @@ const BikeInsurance = () => {
     };
 
     const fetchInsurancePlans = async () => {
+      if (!showPlans) return;
+      
       setLoading(true);
       try {
         const response = await fetch(`${process.env.REACT_APP_API_URL}/api/bikeInsurance/plans?type=${activeTab}`, {
@@ -95,41 +109,190 @@ const BikeInsurance = () => {
 
     fetchInsurancePlans();
     loadRazorpay();
-  }, [activeTab]);
+  }, [activeTab, showPlans]);
 
-  const handleBuyNowClick = (plan) => {
-    setSelectedPlan(plan);
-    setShowForm(true);
+  const validateForm = () => {
+    const errors = {};
+    const currentYear = new Date().getFullYear();
+
+    // Bike Number validation (basic Indian format)
+    if (!formData.bikeNumber.trim()) {
+      errors.bikeNumber = 'Bike number is required';
+    } else if (!/^[A-Za-z]{2}\d{1,2}[A-Za-z]{0,2}\d{1,4}$/.test(formData.bikeNumber.trim())) {
+      errors.bikeNumber = 'Please enter a valid bike number (e.g., MH09S1212)';
+    }
+
+    // Mobile Number validation
+    if (!formData.mobileNumber.trim()) {
+      errors.mobileNumber = 'Mobile number is required';
+    } else if (!/^[6-9]\d{9}$/.test(formData.mobileNumber.trim())) {
+      errors.mobileNumber = 'Please enter a valid 10-digit mobile number';
+    }
+
+    // Bike Brand validation
+    if (!formData.bikeBrand) {
+      errors.bikeBrand = 'Please select a bike brand';
+    }
+
+    // Bike Type validation
+    if (!formData.biketype) {
+      errors.biketype = 'Please select a bike type';
+    }
+
+    // Purchased Year validation
+    if (!formData.purchasedYear) {
+      errors.purchasedYear = 'Purchased year is required';
+    } else if (isNaN(formData.purchasedYear) || 
+               formData.purchasedYear < 2000 || 
+               formData.purchasedYear > currentYear) {
+      errors.purchasedYear = `Please enter a valid year between 2000 and ${currentYear}`;
+    }
+
+    setFormErrors(errors);
+    return Object.keys(errors).length === 0;
   };
 
-  const handleFormSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
+  const saveBikeInsuranceForm = async (paymentId) => {
+    try {
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/bike-insurance-form`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify({
+          bikeNumber: formData.bikeNumber,
+          mobileNumber: formData.mobileNumber,
+          bikeBrand: formData.bikeBrand,
+          bikeType: formData.biketype,
+          purchasedYear: formData.purchasedYear,
+          insuranceType: activeTab,
+          planId: selectedPlan._id,
+          paymentId: paymentId,
+          status: 'completed'
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to save bike insurance form');
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Error saving bike insurance form:', error);
+      throw error;
+    }
+  };
+
+ const handleCheckPrices = async (e) => {
+  e.preventDefault();
+  if (!validateForm()) return;
+  
+  setLoading(true);
+  
+  try {
+    // First check if bike already has active insurance
+    const checkResponse = await fetch(`${process.env.REACT_APP_API_URL}/api/bike-insurance/check?bikeNumber=${formData.bikeNumber}`, {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('token')}`
+      }
+    });
+
+    const checkData = await checkResponse.json();
     
-    // Validate form data
-    if (!formData.bikeNumber || !formData.mobileNumber || !formData.bikeBrand || !formData.purchasedYear) {
-      alert('Please fill all the fields');
+    if (checkData.hasActiveInsurance) {
+      // Show message that bike already has insurance
+      alert(`This bike already has an active insurance policy that expires on ${new Date(checkData.expiryDate).toLocaleDateString()}`);
       setLoading(false);
       return;
     }
 
-    try {
-      await initiatePayment(selectedPlan, 'bike', formData);
-      setShowForm(false);
-    } catch (error) {
-      console.error('Payment failed:', error);
-      alert(error.message || 'Payment initialization failed');
-    } finally {
-      setLoading(false);
-    }
-  };
+    // If no active insurance, proceed to show plans
+    setShowPlans(true);
+    
+  } catch (error) {
+    console.error('Error checking bike insurance:', error);
+    alert('Error checking bike insurance status');
+  } finally {
+    setLoading(false);
+  }
+};
 
+
+const handleBuyNowClick = async (plan) => {
+  setSelectedPlan(plan);
+  setPaymentInProgress(true);
+
+  const token = localStorage.getItem('token');
+  if (!token || !token.startsWith('eyJ')) { // Basic JWT format check
+    alert('Please log in again.');
+    localStorage.removeItem('token');
+    window.location.href = '/login';
+    return;
+  }
+
+  try {
+    // 2. Proceed with the API call...
+    const formResponse = await fetch(`${process.env.REACT_APP_API_URL}/api/bike-insurance-form`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`, // Attach token
+      },
+      body: JSON.stringify({
+        bikeNumber: formData.bikeNumber,
+        mobileNumber: formData.mobileNumber,
+        bikeBrand: formData.bikeBrand,
+        bikeType: formData.biketype,
+        purchasedYear: formData.purchasedYear,
+        insuranceType: activeTab,
+        planId: plan._id,
+        status: 'pending',
+      }),
+    });
+
+    console.log("Form submission response:", formResponse);
+
+    if (!formResponse.ok) {
+      const errorData = await formResponse.json().catch(() => ({}));
+      console.error("Error details:", errorData);
+      throw new Error(errorData.message || 'Failed to save bike insurance form');
+    }
+
+    const responseData = await formResponse.json();
+    console.log("Form saved successfully:", responseData);
+
+    const { _id: formSubmissionId } = responseData;
+
+    const paymentResult = await initiatePayment(plan, 'bike', formSubmissionId);
+    console.log("Payment result:", paymentResult);
+
+    if (paymentResult?.success) {
+      alert('Payment and registration successful!');
+    } else {
+      throw new Error(paymentResult?.message || 'Payment failed');
+    }
+  } catch (error) {
+    console.error('Payment failed:', error);
+    alert(error.message || 'Payment failed. Please try again.');
+  } finally {
+    setPaymentInProgress(false);
+  }
+};
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
       [name]: value
     }));
+    
+    // Clear error when user starts typing
+    if (formErrors[name]) {
+      setFormErrors(prev => ({
+        ...prev,
+        [name]: ''
+      }));
+    }
   };
 
   return (
@@ -144,196 +307,224 @@ const BikeInsurance = () => {
           </div>
         </div>
 
-        {/* Insurance Plans */}
-        <section className="insurance-plans">
-          <div className="container">
-            <h2>Top Bike Insurance Plans</h2>
-
-            <div className="plan-tabs">
-              {['Comprehensive', 'Third Party', 'Own Damage'].map(tab => (
-                <button
-                  key={tab}
-                  className={`tab-btn ${activeTab === tab ? 'active' : ''}`}
-                  onClick={() => setActiveTab(tab)}
-                >
-                  {tab}
-                </button>
-              ))}
-            </div>
-
-            {loading ? (
-              <div className="loading">Loading plans...</div>
-            ) : (
-              <div className="plan-cards">
-                {insurancePlans.map((plan, index) => (
-                  <div key={index} className="plan-card">
-                    <div className="plan-header">
-                      <img src={plan.logo} alt={plan.name} className="plan-logo" />
-                      <h3>{plan.name}</h3>
-                    </div>
-
-                    <div className="plan-features">
-                      <ul>
-                        {plan.features.map((feature, i) => (
-                          <li key={i}>
-                            <span className="feature-name">{feature.split(' ')[0]}</span>
-                            <span className="feature-value">{feature.split(' ').slice(1).join(' ')}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-
-                    <div className="plan-footer">
-                      <div className="plan-price">
-                        Starting From <span>{plan.price}</span>
-                        {plan.discount && <span className="discount-badge">{plan.discount}</span>}
-                      </div>
-                      <button
-                        onClick={() => handleBuyNowClick(plan)}
-                        disabled={loading}
-                        className="check-price-btn"
-                      >
-                        {loading ? (
-                          <>
-                            <span className="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-                            Processing...
-                          </>
-                        ) : 'Buy Now'}
-                      </button>
-                    </div>
-
-                    <div className="key-features">
-                      <h4>Key Features:</h4>
-                      <ul>
-                        {plan.keyFeatures.map((feature, i) => (
-                          <li key={i}>
-                            <span className="tick-icon">✓</span> {feature}
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        </section>
-
-        {/* Form Modal */}
-        {showForm && (
-          <div className="form-modal-overlay">
-            <div className="form-modal">
-              <h3>Enter Your Bike Details</h3>
-              <form onSubmit={handleFormSubmit}>
-                <label>Bike Number</label>
+        {/* Bike Details Form - Show first */}
+        {!showPlans && (
+          <section className="bike-details-form">
+            <div className="container">
+              <h2>Enter Your Bike Details</h2>
+                                <label htmlFor="bikeNumber">Bike Number</label>
+              <form onSubmit={handleCheckPrices} noValidate>
                 <div className="form-group">
                   <input
                     type="text"
+                    id="bikeNumber"
                     name="bikeNumber"
                     value={formData.bikeNumber}
                     onChange={handleInputChange}
                     placeholder="eg. MH09S1212"
-                    required
+                    className={formErrors.bikeNumber ? 'error' : ''}
                   />
+                  {formErrors.bikeNumber && <span className="error-message">{formErrors.bikeNumber}</span>}
                 </div>
-                <label>Mobile Number</label>
+                  <label htmlFor="mobileNumber">Mobile Number</label>
                 <div className="form-group">
                   <input
                     type="tel"
+                    id="mobileNumber"
                     name="mobileNumber"
                     value={formData.mobileNumber}
                     onChange={handleInputChange}
                     placeholder="eg. 9858765332"
-                    required
+                    className={formErrors.mobileNumber ? 'error' : ''}
+                    maxLength="10"
                   />
+                  {formErrors.mobileNumber && <span className="error-message">{formErrors.mobileNumber}</span>}
                 </div>
-                <label>Bike Brand</label>
+                  <label htmlFor="bikeBrand">Bike Brand</label>
                 <div className="form-group">
-                  <input
-                    type="text"
+                  <select
+                    id="bikeBrand"
                     name="bikeBrand"
                     value={formData.bikeBrand}
                     onChange={handleInputChange}
-                    placeholder="eg. Bajaj, Honda.."
-                    required
-                  />
+                    className={formErrors.bikeBrand ? 'error' : ''}
+                  >
+                    <option value="">Select Bike Brand</option>
+                    {bikeBrands.map(brand => (
+                      <option key={brand} value={brand}>{brand}</option>
+                    ))}
+                  </select>
+                  {formErrors.bikeBrand && <span className="error-message">{formErrors.bikeBrand}</span>}
                 </div>
-                <label>Purchased Year</label>
+                                  <label htmlFor="biketype">Bike Type</label>
+                <div className="form-group">
+                  <select
+                    id="biketype"
+                    name="biketype"
+                    value={formData.biketype}
+                    onChange={handleInputChange}
+                    className={formErrors.biketype ? 'error' : ''}
+                  >
+                    <option value="">Select Bike Type</option>
+                    {biketypes.map(type => (
+                      <option key={type} value={type}>{type}</option>
+                    ))}
+                  </select>
+                  {formErrors.biketype && <span className="error-message">{formErrors.biketype}</span>}
+                </div>
+                  <label htmlFor="purchasedYear">Purchased Year</label>
                 <div className="form-group">
                   <input
                     type="number"
+                    id="purchasedYear"
                     name="purchasedYear"
                     value={formData.purchasedYear}
                     onChange={handleInputChange}
-                    placeholder="Enter purchased year"
-                    min="1900"
+                    placeholder={`Enter year between 2000-${new Date().getFullYear()}`}
+                    className={formErrors.purchasedYear ? 'error' : ''}
+                    min="2000"
                     max={new Date().getFullYear()}
-                    required
                   />
+                  {formErrors.purchasedYear && <span className="error-message">{formErrors.purchasedYear}</span>}
                 </div>
+
                 <div className="form-actions">
-                  <button
-                    type="button"
-                    className="cancel-btn"
-                    onClick={() => setShowForm(false)}
-                    disabled={loading}
-                  >
-                    Cancel
-                  </button>
                   <button
                     type="submit"
                     className="submit-btn"
                     disabled={loading}
                   >
-                    {loading ? 'Processing...' : 'Proceed to Payment'}
+                    {loading ? 'Loading...' : 'Check Prices'}
                   </button>
                 </div>
               </form>
             </div>
-          </div>
+          </section>
         )}
 
-        {/* Insurance Types */}
-        <section className="insurance-types">
-          <div className="container">
-            <h2>Types of Bike Insurance</h2>
-            <p className="subtitle">
-              It is important to choose the right bike insurance policy. Here's what you need to know about the different types.
-            </p>
+        {/* Insurance Plans - Show after form submission */}
+        {showPlans && (
+          <>
+            {/* Insurance Plans */}
+            <section className="insurance-plans">
+              <div className="container">
+                <h2>Top Bike Insurance Plans</h2>
 
-            <div className="type-cards">
-              {insuranceTypes.map((type, index) => (
-                <div key={index} className="type-card">
-                  <img src={type.icon} alt={type.name} className="type-icon" />
-                  <h3>{type.name}</h3>
-                  <p>{type.description}</p>
-                  <a href="#" className="learn-more">Learn More →</a>
+                <div className="plan-tabs">
+                  {insuranceTypes.map(type => (
+                    <button
+                      key={type.name}
+                      className={`tab-btn ${activeTab === type.name ? 'active' : ''}`}
+                      onClick={() => setActiveTab(type.name)}
+                    >
+                      {type.name}
+                    </button>
+                  ))}
                 </div>
-              ))}
-            </div>
-          </div>
-        </section>
 
-        {/* What is Bike Insurance */}
-        <section className="info-section">
-          <div className="container">
-            <h2>What is Bike Insurance?</h2>
-            <div className="content">
-              <p>
-                Once you've secured the bike of your dreams, the next step is to get bike insurance from a reliable provider.
-                Think of it as a safety net for your beloved ride and the loved ones who will use it. Bike insurance, also
-                called two wheeler insurance, is a contract between an insurer and you, the policyholder to protect you
-                from unpredictable circumstances like accidents, theft or natural calamities.
-              </p>
-              <p>
-                According to the Motor Vehicles Act of 1988, every bike owner must have at least a third-party insurance policy.
-                This provides coverage in case you are ever involved in an accident causing physical or property damage.
-              </p>
-            </div>
-          </div>
-        </section>
+                {loading ? (
+                  <div className="loading">Loading plans...</div>
+                ) : (
+                  <div className="plan-cards">
+                    {insurancePlans.map((plan, index) => (
+                      <div key={index} className="plan-card">
+                        <div className="plan-header">
+                          <img src={plan.logo} alt={plan.name} className="plan-logo" />
+                          <h3>{plan.name}</h3>
+                        </div>
+
+                        <div className="plan-features">
+                          <ul>
+                            {plan.features.map((feature, i) => (
+                              <li key={i}>
+                                <span className="feature-name">{feature.split(' ')[0]}</span>
+                                <span className="feature-value">{feature.split(' ').slice(1).join(' ')}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+
+                        <div className="plan-footer">
+                          <div className="plan-price">
+                            Starting From <span>{plan.price}</span>
+                            <div>
+                              {plan.discount && <span className="discount-badge">{plan.discount}</span>}
+                            </div>
+                          </div>
+                          <button
+                            onClick={() => handleBuyNowClick(plan)}
+                            disabled={loading}
+                            className="check-price-btn"
+                          >
+                            {loading ? (
+                              <>
+                                <span className="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                                Processing...
+                              </>
+                            ) : 'Buy Now'}
+                          </button>
+                        </div>
+
+                        <div className="key-features">
+                          <h4>Key Features:</h4>
+                          <ul>
+                            {plan.keyFeatures.map((feature, i) => (
+                              <li key={i}>
+                                <span className="tick-icon">✓</span> {feature}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </section>
+
+            {/* Insurance Types */}
+            <section className="insurance-types">
+              <div className="container">
+                <h2>Types of Bike Insurance</h2>
+                <p className="subtitle">
+                  It is important to choose the right bike insurance policy. Here's what you need to know about the different types.
+                </p>
+
+                <div className="type-cards">
+                  {insuranceTypes.map((type, index) => (
+                    <div key={index} className="type-card">
+                      <img src={type.icon} alt={type.name} className="type-icon" />
+                      <h3>{type.name}</h3>
+                      <p>{type.description}</p>
+                      <a href="#" className="learn-more">Learn More →</a>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </section>
+
+            {/* What is Bike Insurance */}
+            <section className="info-section">
+              <div className="container">
+                <h2>What is Bike Insurance?</h2>
+                <div className="content">
+                  <p>
+                    Once you've secured the bike of your dreams, the next step is to get bike insurance from a reliable provider.
+                    Think of it as a safety net for your beloved ride and the loved ones who will use it. Bike insurance, also
+                    called two wheeler insurance, is a contract between an insurer and you, the policyholder to protect you
+                    from unpredictable circumstances like accidents, theft or natural calamities.
+                  </p>
+                  <p>
+                    According to the Motor Vehicles Act of 1988, every bike owner must have at least a third-party insurance policy.
+                    This provides coverage in case you are ever involved in an accident causing physical or property damage.
+                  </p>
+                </div>
+              </div>
+            </section>
+          </>
+        )}
       </div>
-      <Footer/>
+      <Footer />
     </>
   );
 };

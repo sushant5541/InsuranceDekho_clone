@@ -21,6 +21,7 @@ const carInsuranceRoutes = require('./routes/carInsuranceRoutes');
 const InsuranceRoutes = require('./routes/InsurnaceRoutes');
 const bikeInsuranceFormRoutes = require('./routes/bikeInsuranceFormRoutes.js');
 const carInsuranceFormRoutes = require('./routes/carInsuranceFormRoutes');
+const healthInsuranceFormRoutes = require('./routes/healthInsuranceForm');
 
 
 
@@ -70,6 +71,8 @@ app.use('/api/payments', paymentRoutes);
 app.use('/api/car-insurance', carInsuranceRoutes);
 app.use('/api/bike-insurance-form', bikeInsuranceFormRoutes);
 app.use('/api/car-insurance-form', carInsuranceFormRoutes);
+app.use('/api/health-insurance-form', healthInsuranceFormRoutes);
+
 
 // Health check
 app.get('/health', (req, res) => {

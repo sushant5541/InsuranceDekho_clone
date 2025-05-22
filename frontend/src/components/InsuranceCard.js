@@ -7,8 +7,10 @@ const insuranceItems = [
   { title: "Bike Insurance", img: "https://www.insurancedekho.com/pwa/img/v2_icon_bike.svg", path: "/bike-insurance" },
   { title: "Health Insurance", img: "https://www.insurancedekho.com/pwa/img/v2_icon_health.svg", path: "/Health-insurance" },
   { title: "Term Insurance", img: "https://static.insurancedekho.com/pwa/img/v2_icon_life.svg", path: "/term-insurance" },
+   { title: "Life Insurance", img: "https://static.insurancedekho.com/pwa/img/life_insurance.svg", path: "/life-insurance" },
   { title: "Investment Plans", img: "https://www.insurancedekho.com/pwa/img/v2_icon_investment.svg", path: "/investment-plans" },
   { title: "Family Health", img: "https://static.insurancedekho.com/pwa/img/v2_icon_health.svg", path: "/family-health" },
+ 
 ];
 
 const InsuranceCards = () => {
@@ -31,11 +33,11 @@ const InsuranceCards = () => {
         </div>
         <div className="row justify-content-center g-4 mt-1">
           <div className="col-6 col-md-4 col-lg-2">
-            <Link to={insuranceItems[5].path} className="text-decoration-none text-dark">
+            <Link to={insuranceItems[5, 6].path} className="text-decoration-none text-dark">
               <div className="card text-center shadow-sm h-100">
                 <div className="card-body" style={{ cursor: 'pointer' }}>
-                  <img src={insuranceItems[5].img} alt={insuranceItems[5].title} height="60" className="mb-2" />
-                  <h6 className="card-title">{insuranceItems[5].title}</h6>
+                  <img src={insuranceItems[5, 6].img} alt={insuranceItems[5, 6].title} height="60" className="mb-2" />
+                  <h6 className="card-title">{insuranceItems[5, 6].title}</h6>
                 </div>
               </div>
             </Link>

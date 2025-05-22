@@ -5,6 +5,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import { Table, Card, Spinner, Badge, Button } from 'react-bootstrap';
 import { format } from 'date-fns';
+import Footer from '../components/Footer/Footer';
 
 const UserDashboard = () => {
   const { user } = useAuth();
@@ -237,6 +238,7 @@ const UserDashboard = () => {
   };
 
   return (
+    <>
     <div className="app-content">
       <div className="my-account-body my-account-v2">
         <div className="my-account-wrap">
@@ -449,6 +451,8 @@ const UserDashboard = () => {
         </div>
       </div>
     </div>
+    <Footer/>
+    </>
   );
 };
 
