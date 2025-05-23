@@ -19,12 +19,12 @@ router.get('/check', async (req, res) => {
       });
     }
 
-    // Find active policies (not expired or cancelled)
+    // Find active policies
     const existingPolicy = await CarInsuranceForm.findOne({
       carNumber: carNumber.toUpperCase(),
       status: { $in: ['completed', 'pending_payment'] },
       policyEndDate: { $gt: new Date() }
-    });
+    }).populate('planId', 'name price');
 
     if (existingPolicy) {
       return res.status(200).json({
@@ -33,7 +33,8 @@ router.get('/check', async (req, res) => {
         policy: {
           policyNumber: existingPolicy.policyNumber,
           insurer: existingPolicy.planId?.name || 'Unknown',
-          expiryDate: existingPolicy.policyEndDate
+          expiryDate: existingPolicy.policyEndDate,
+          planPrice: existingPolicy.planId?.price
         }
       });
     }
@@ -51,50 +52,46 @@ router.get('/check', async (req, res) => {
 });
 
 
-router.post('/', protect, async (req, res) => {
+router.post('/create', protect, async (req, res) => {
   try {
-    const { 
-      carNumber, carBrand, carModel, carType, purchasedYear,
-      mobileNumber, insuranceType, carValue
-    } = req.body;
-
-    // Check for existing draft
-    let form = await CarInsuranceForm.findOne({
-      userId: req.user._id,
-      status: 'draft'
-    });
-
-    if (!form) {
-      form = new CarInsuranceForm({
-        userId: req.user._id,
-        status: 'draft'
+    // First check for existing active insurance
+    const existing = await CarInsuranceForm.checkExistingInsurance(
+      req.body.carNumber, 
+      req.user._id
+    );
+    
+    if (existing) {
+      return res.status(400).json({
+        success: false,
+        error: 'Active insurance already exists for this vehicle',
+        existingPolicy: existing
       });
     }
 
-    // Update form data
-    form.carNumber = carNumber;
-    form.carBrand = carBrand;
-    form.carModel = carModel;
-    form.carType = carType;
-    form.purchasedYear = purchasedYear;
-    form.mobileNumber = mobileNumber;
-    form.insuranceType = insuranceType;
-    form.carValue = carValue;
+    // Create new record
+    const formData = {
+      ...req.body,
+      userId: req.user._id,
+      status: 'completed',
+      policyNumber: generatePolicyNumber(),
+      policyStartDate: new Date(),
+      policyEndDate: new Date(new Date().setFullYear(new Date().getFullYear() + 1)),
+      paymentDate: new Date()
+    };
 
+    const form = new CarInsuranceForm(formData);
     await form.save();
 
-    res.status(200).json({
-      success: true,
-      data: form
-    });
+    res.status(201).json({ success: true, data: form });
   } catch (error) {
+    console.error('Create error:', error);
     res.status(400).json({
       success: false,
-      error: error.message
+      error: error.message,
+      validationErrors: error.errors
     });
   }
 });
-
 // @desc    Complete car insurance after payment
 // @route   PUT /api/car-insurance-form/:id/complete
 // @access  Private

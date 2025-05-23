@@ -25,6 +25,10 @@ import DownloadPolicyPage from './pages/DownloadPolicyPage';
 import CarInsuranceNews from './pages/CarInsuranceNews';
 import BikeInsuranceNews from './pages/BikeInsuranceNews';
 import HealthInsuranceNews from './pages/HealthnsuranceNews';
+import TermInsurance from './pages/TermInsurnace'
+import POSPAgentPage from './pages/POSPagent'
+import TermInsuranceNews from './pages/TermInsuranceNews'
+import LifeInsuranceNews from './pages/LifeInsurnaceNews';
 
 
 function App() {
@@ -73,11 +77,15 @@ function App() {
       <Route path="/bike-insurance" element={<BikeInsurance />} />
       <Route path="/health-insurance" element={<HealthInsurance />} />
       <Route path="/life-insurance" element={<LifeInsurance />} />
+       <Route path="/term-insurance" element={<TermInsurance />} />
       <Route path="/check-premium" element={<PremiumDetails />} />
       <Route path="/health-quote" element={<QuotePage />} />
+      <Route path="/become-agent" element={<POSPAgentPage />} />
       <Route path="/car-insurance/news" element={<CarInsuranceNews />} />
       <Route path="/bike-insurance/news" element={<BikeInsuranceNews />} />
       <Route path="/Health-insurance/news" element={<HealthInsuranceNews />} />
+      <Route path="/term-insurance/news" element={<TermInsuranceNews />} />
+      <Route path="/life-insurance/news" element={<LifeInsuranceNews />} />
 
       <Route path="/download" element={<DownloadPolicyPage />} />
     </Routes>

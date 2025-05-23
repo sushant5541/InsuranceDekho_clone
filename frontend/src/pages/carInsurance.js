@@ -21,6 +21,7 @@ const CarInsurance = () => {
     carModel: '',
     carValue: ''
   });
+  const [existingInsurance, setExistingInsurance] = useState(null);
 
   const insuranceTypes = [
     {
@@ -153,110 +154,94 @@ const CarInsurance = () => {
     return Object.keys(errors).length === 0;
   };
 
-  const saveCarInsuranceForm = async (paymentId) => {
-    try {
-      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/car-insurance-form`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
-        body: JSON.stringify({
-          carNumber: formData.carNumber,
-          mobileNumber: formData.mobileNumber,
-          carBrand: formData.carBrand,
-          carType: formData.carType,
-          carModel: formData.carModel,
-          carValue: formData.carValue,
-          purchasedYear: formData.purchasedYear,
-          insuranceType: activeTab,
-          planId: selectedPlan._id,
-          paymentId: paymentId,
-          status: 'completed'
-        })
-      });
 
-      if (!response.ok) {
-        throw new Error('Failed to save car insurance form');
+  const handleCheckPrices = async (e) => {
+  e.preventDefault();
+  if (!validateForm()) return;
+  
+  setLoading(true);
+  try {
+    // Check for existing insurance
+    const response = await fetch(`${process.env.REACT_APP_API_URL}/api/car-insurance-form/check?carNumber=${formData.carNumber}`, {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('token')}`
       }
-
-      return await response.json();
-    } catch (error) {
-      console.error('Error saving car insurance form:', error);
-      throw error;
+    });
+    
+    if (!response.ok) {
+      throw new Error('Failed to check existing insurance');
     }
-  };
-
-  const handleCheckPrices = (e) => {
-    e.preventDefault();
-    if (!validateForm()) return;
-    setShowPlans(true);
-  };
-
-  const handleBuyNowClick = async (plan) => {
-    setSelectedPlan(plan);
-    setPaymentInProgress(true);
-
-    const token = localStorage.getItem('token');
-    if (!token || !token.startsWith('eyJ')) {
-      alert('Please log in again.');
-      localStorage.removeItem('token');
-      window.location.href = '/login';
+    
+    const data = await response.json();
+    
+    if (data.hasInsurance) {
+      setExistingInsurance(data.policy);
       return;
     }
+    
+    // If no existing insurance, proceed to show plans
+    setShowPlans(true);
+  } catch (error) {
+    console.error('Error checking existing insurance:', error);
+    // Even if check fails, we can proceed but show error
+    alert('Error checking existing insurance. Please verify your car details.');
+    setShowPlans(true);
+  } finally {
+    setLoading(false);
+  }
+};
 
-    try {
-      // Save form data first
-      const formResponse = await fetch(`${process.env.REACT_APP_API_URL}/api/car-insurance-form`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          carNumber: formData.carNumber,
-          mobileNumber: formData.mobileNumber,
-          carBrand: formData.carBrand,
-          carType: formData.carType,
-          carModel: formData.carModel,
-          carValue: formData.carValue,
-          purchasedYear: formData.purchasedYear,
-          insuranceType: activeTab,
-          planId: plan._id,
-          status: 'pending',
-        }),
-      });
+  const handleBuyNowClick = async (plan) => {
+  setPaymentInProgress(true);
 
-      console.log("Form submission response:", formResponse);
+  try {
+    // 1. Initiate payment
+    const paymentResult = await initiatePayment(plan, 'car');
+    if (!paymentResult.success) throw new Error(paymentResult.message);
 
-      if (!formResponse.ok) {
-        const errorData = await formResponse.json().catch(() => ({}));
-        console.error("Error details:", errorData);
-        throw new Error(errorData.message || 'Failed to save car insurance form');
-      }
+    // 2. Prepare payload
+    const payload = {
+      carNumber: formData.carNumber.toUpperCase(),
+      mobileNumber: formData.mobileNumber,
+      carBrand: formData.carBrand,
+      carType: formData.carType,
+      carModel: formData.carModel || undefined, // Optional
+      carValue: formData.carValue || undefined, // Optional
+      purchasedYear: formData.purchasedYear,
+      insuranceType: activeTab,
+      planId: plan._id,
+      paymentId: paymentResult.paymentId,
+      paymentAmount: plan.price,
+      coverageDetails: plan.coverageDetails || {}
+    };
 
-      const responseData = await formResponse.json();
-      console.log("Form saved successfully:", responseData);
+    // 3. Create insurance record
+    const response = await fetch(`${process.env.REACT_APP_API_URL}/api/car-insurance-form/create`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('token')}`,
+      },
+      body: JSON.stringify(payload)
+    });
 
-      const { _id: formSubmissionId } = responseData;
+    const data = await response.json();
 
-      // Initiate payment
-      const paymentResult = await initiatePayment(plan, 'car', formSubmissionId);
-      console.log("Payment result:", paymentResult);
-
-      if (paymentResult?.success) {
-        alert('Payment and registration successful!');
-      } else {
-        throw new Error(paymentResult?.message || 'Payment failed');
-      }
-    } catch (error) {
-      console.error('Payment failed:', error);
-      alert(error.message || 'Payment failed. Please try again.');
-    } finally {
-      setPaymentInProgress(false);
+    if (!response.ok) {
+      console.error('Backend errors:', data);
+      throw new Error(data.error || 'Failed to create insurance record');
     }
-  };
 
+    // Success!
+    alert('Insurance created successfully!');
+    // Redirect or show success page
+  } catch (error) {
+    console.error('Error:', error);
+    alert(`Error: ${error.message}`);
+  } finally {
+    setPaymentInProgress(false);
+  }
+};
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({
@@ -272,6 +257,26 @@ const CarInsurance = () => {
     }
   };
 
+  const ExistingInsuranceAlert = ({ policy, onContinue }) => (
+  <div className="existing-insurance-alert">
+    <div className="alert-content">
+      <h3>Existing Insurance Found</h3>
+      <p>
+        This car number <strong>{policy.policyNumber}</strong> already has an active policy 
+        that expires on {new Date(policy.expiryDate).toLocaleDateString()}.
+      </p>
+      <div className="alert-actions">
+        <button className="btn-secondary" onClick={() => setExistingInsurance(null)}>
+          Go Back
+        </button>
+        <button className="btn-primary" onClick={onContinue}>
+          Continue Anyway
+        </button>
+      </div>
+    </div>
+  </div>
+);
+
   return (
     <>
       <div className="car-insurance-page">
@@ -285,9 +290,18 @@ const CarInsurance = () => {
         </div>
 
         {/* Car Details Form - Show first */}
-        {!showPlans && (
+      {existingInsurance ? (
+  <ExistingInsuranceAlert 
+    policy={existingInsurance}
+    onContinue={() => {
+      setExistingInsurance(null);
+      setShowPlans(true);
+    }}
+  />
+) :!showPlans && (
           <section className="car-details-form">
-            <div className="container">
+            <div className="form-with-image-container">
+            <div className="container" >
               <h2>Enter Your Car Details</h2>
               <form onSubmit={handleCheckPrices} noValidate>
                 <label htmlFor="carNumber">Car Number</label>
@@ -365,19 +379,6 @@ const CarInsurance = () => {
                   {formErrors.carType && <span className="error-message">{formErrors.carType}</span>}
                 </div>
 
-                <label htmlFor="carValue">Estimated Car Value (₹)</label>
-                <div className="form-group">
-                  <input
-                    type="number"
-                    id="carValue"
-                    name="carValue"
-                    value={formData.carValue}
-                    onChange={handleInputChange}
-                    placeholder="Approximate market value"
-                    min="0"
-                  />
-                </div>
-
                 <label htmlFor="purchasedYear">Purchased Year</label>
                 <div className="form-group">
                   <input
@@ -405,6 +406,18 @@ const CarInsurance = () => {
                 </div>
               </form>
             </div>
+             <div className="form-image-container">
+        <img 
+          src="https://www.policybazaar.com/pblife/assets/images/pb_life_1631626565.jpg" 
+          alt="Car Insurance Illustration"
+          className="form-side-image"
+          onError={(e) => {
+            e.target.onerror = null;
+            e.target.src = 'https://via.placeholder.com/400x600?text=Car+Insurance';
+          }}
+        />
+      </div>
+    </div>
           </section>
         )}
 

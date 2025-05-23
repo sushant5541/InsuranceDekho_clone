@@ -1,0 +1,316 @@
+.news-container {
+  display: flex;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+  gap: 20px;
+}
+
+.news-left-column {
+  flex: 2;
+}
+
+.news-right-column {
+  flex: 1;
+}
+
+.news-card {
+  display: flex;
+  margin-bottom: 30px;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.news-image {
+  flex: 0 0 35%;
+}
+
+.news-image img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.news-content {
+  flex: 1;
+  padding: 20px;
+}
+
+.news-content h2 {
+  font-size: 20px;
+  margin-bottom: 10px;
+  color: #333;
+}
+
+.news-description {
+  font-size: 14px;
+  color: #666;
+  margin-bottom: 15px;
+  line-height: 1.5;
+}
+
+.author-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.author-thumb {
+  width: 30px;
+  height: 30px;
+  background: #f0f0f0;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+}
+
+.author-details {
+  font-size: 12px;
+}
+
+.author-name {
+  font-weight: bold;
+}
+
+.publish-date {
+  color: #999;
+}
+
+.pagination {
+  margin: 30px 0;
+  text-align: center;
+}
+
+.pagination ul {
+  display: inline-flex;
+  list-style: none;
+  padding: 0;
+  margin: 0 0 10px 0;
+}
+
+.pagination li {
+  margin: 0 5px;
+  padding: 5px 10px;
+  border-radius: 4px;
+}
+
+.pagination li.active {
+  background: #e74c3c;
+  color: white;
+}
+
+.pagination li.disabled {
+  display: none;
+}
+
+.benefits-section {
+  background: #fff;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 30px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  position: relative;
+  overflow: hidden;
+}
+
+.must-dot, .must-graphic, .must-logo {
+  position: absolute;
+}
+
+.must-dot {
+  top: -20px;
+  left: -20px;
+}
+
+.must-graphic {
+  top: 0;
+  right: 0;
+}
+
+.must-logo {
+  bottom: 20px;
+  right: 20px;
+}
+
+.benefits-list h2 {
+  font-size: 18px;
+  margin-bottom: 15px;
+  color: #333;
+}
+
+.benefits-list ul {
+  list-style: none;
+  padding: 0;
+  margin-bottom: 20px;
+}
+
+.benefits-list li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+  font-size: 14px;
+}
+
+.view-quotes-btn {
+  background: #e74c3c;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 4px;
+  font-weight: bold;
+  cursor: pointer;
+  width: 100%;
+}
+
+.advisors-section {
+  background: #fff;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 30px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.advisors-section h2 {
+  font-size: 18px;
+  margin-bottom: 15px;
+  color: #333;
+}
+
+.cities-slider {
+  display: flex;
+  overflow-x: auto;
+  gap: 15px;
+  padding-bottom: 10px;
+}
+
+.city-item {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 10px;
+  border: 1px solid #eee;
+  border-radius: 4px;
+  min-width: 100px;
+}
+
+.city-icon {
+  width: 40px;
+  height: 40px;
+  background: #f0f0f0;
+  border-radius: 50%;
+  margin-bottom: 5px;
+}
+
+.insurance-partners {
+  background: #fff;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.insurance-partners h2 {
+  font-size: 18px;
+  margin-bottom: 15px;
+  color: #333;
+}
+
+.partners-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 15px;
+}
+
+.partner-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  font-size: 12px;
+}
+
+.partner-item img {
+  width: 60px;
+  height: 40px;
+  object-fit: contain;
+  margin-bottom: 5px;
+}
+
+.view-all-link {
+  text-align: center;
+  margin: 15px 0;
+}
+
+.view-all-link a {
+  color: #e74c3c;
+  text-decoration: none;
+  font-size: 14px;
+}
+
+.disclaimer {
+  font-size: 11px;
+  color: #999;
+  margin-top: 10px;
+}
+
+.quick-links {
+  background: #fff;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.quick-links h2 {
+  font-size: 18px;
+  margin-bottom: 15px;
+  color: #333;
+}
+
+.quick-links ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.quick-links li {
+  margin-bottom: 10px;
+}
+
+.quick-links a {
+  color: #333;
+  text-decoration: none;
+  font-size: 14px;
+}
+
+.quick-links a:hover {
+  color: #e74c3c;
+}
+
+.blue-link {
+  color: #3498db !important;
+}
+
+@media (max-width: 768px) {
+  .news-container {
+    flex-direction: column;
+  }
+  
+  .news-card {
+    flex-direction: column;
+  }
+  
+  .news-image {
+    flex: 0 0 auto;
+  }
+  
+  .partners-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}

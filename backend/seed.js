@@ -10,6 +10,8 @@ const Policy = require('./models/Policy');
 const HealthInsurancePlan = require('./models/HealthInsurancePlan');
 const BikeInsurancePlan = require('./models/BikeInsurancePlan');
 const CarInsurancePlan = require('./models/CarInsurancePlan')
+const TermInsurancePlan = require('./models/TermInsurnace');
+
 
 // Ensure Mongo URI is available
 const MONGO_URI = process.env.MONGO_URL;
@@ -389,6 +391,126 @@ const carPlans = [
       }
     ];
 
+    const termPlans = [
+  {
+    insurer: 'Bandhan Life',
+    planName: 'iTerm Comfort',
+    logo: 'https://ins-common-logos-prod.s3.ap-south-1.amazonaws.com/brokerage/logo/life/bandhan_life_logo.jpg',
+    lifeCover: '25 L',
+    coverUpto: '50 Years',
+    claimSettled: '99.7%',
+    features: [
+      'Life Cover',
+      'Critical Illness Rider available',
+      'Accidental Death Benefit'
+    ],
+    benefits: [
+      'Zero cost plan',
+      'No Income Proof required',
+      'Flexible premium payment options'
+    ],
+    freeAddons: 1,
+    paidAddons: 1,
+    monthlyPremium: '₹395',
+    yearlyPremium: '₹4,740',
+    discount: '10% Off',
+    zeroCostPlan: true,
+    noIncomeProof: true
+  },
+  {
+    insurer: 'LIC',
+    planName: 'New Jeevan Amar',
+    logo: 'https://ins-common-logos-prod.s3.amazonaws.com/brokerage/logo/life/lic/FULL%20lic-logo-png-transparent%201.png',
+    lifeCover: '25 L',
+    coverUpto: '50 Years',
+    claimSettled: '98.35%',
+    features: [
+      'Life Cover',
+      'Option to increase cover',
+      'Return of premium option available'
+    ],
+    benefits: [
+      'Trusted PSU insurer',
+      'High claim settlement ratio',
+      'Long term coverage options'
+    ],
+    freeAddons: 1,
+    paidAddons: 1,
+    monthlyPremium: '₹541',
+    yearlyPremium: '₹6,490',
+    discount: '5% Off'
+  },
+  {
+    insurer: 'Bajaj Allianz',
+    planName: 'Flexi Term',
+    logo: 'https://ins-common-logos-prod.s3.ap-south-1.amazonaws.com/brokerage/logo/life/baxa.jpg',
+    lifeCover: '25 L',
+    coverUpto: '50 Yrs',
+    claimSettled: '99.70%',
+    features: [
+      'Life Cover',
+      'Flexible premium payment terms',
+      'Option to increase cover'
+    ],
+    benefits: [
+      'High claim settlement ratio',
+      'Option to add riders',
+      'Online purchase available'
+    ],
+    freeAddons: 1,
+    paidAddons: 2,
+    monthlyPremium: '₹420',
+    yearlyPremium: '₹5,040',
+    discount: '12% Off'
+  },
+  {
+    insurer: 'HDFC Life',
+    planName: 'Click 2 Protect Life',
+    logo: 'https://static.insurancedekho.com/pwa/img/banner/hdfc.png',
+    lifeCover: '25 L',
+    coverUpto: '50 Years',
+    claimSettled: '98.5%',
+    features: [
+      'Life Cover',
+      'Increasing cover option',
+      'Critical illness rider available'
+    ],
+    benefits: [
+      'Instant policy issuance',
+      'No medical tests for some cases',
+      'Online purchase process'
+    ],
+    freeAddons: 2,
+    paidAddons: 2,
+    monthlyPremium: '₹480',
+    yearlyPremium: '₹5,760',
+    discount: '15% Off'
+  },
+  {
+    insurer: 'ICICI Pru',
+    planName: 'iProtect Smart',
+    logo: 'https://static.insurancedekho.com/pwa/img/banner/icici.png',
+    lifeCover: '25 L',
+    coverUpto: '50 Years',
+    claimSettled: '98.9%',
+    features: [
+      'Life Cover',
+      'Option to return premium',
+      'Multiple rider options'
+    ],
+    benefits: [
+      'Flexible payment options',
+      'High sum assured options',
+      'Quick claim settlement'
+    ],
+    freeAddons: 1,
+    paidAddons: 3,
+    monthlyPremium: '₹510',
+    yearlyPremium: '₹6,120',
+    discount: '8% Off'
+  }
+];
+
 
 
     // Insert data into the database
@@ -396,6 +518,7 @@ const carPlans = [
     await HealthInsurancePlan.insertMany(healthPlans);
     await BikeInsurancePlan.insertMany(bikePlans);
      await CarInsurancePlan.insertMany(carPlans);
+     await TermInsurancePlan.insertMany(termPlans);
 
     console.log('✅ Database seeded successfully');
     process.exit(0);

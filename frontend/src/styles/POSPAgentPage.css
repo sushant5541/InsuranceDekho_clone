@@ -1,0 +1,339 @@
+/* Base Styles */
+.posp-agent-page {
+  font-family: 'Roboto', sans-serif;
+  color: #333;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 15px;
+}
+
+/* Banner Styles */
+
+.banner-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.banner-text {
+  flex: 1;
+  min-width: 300px;
+  padding: 0 20px;
+}
+
+.tagline {
+  font-size: 16px;
+  font-weight: 500;
+  margin-bottom: 10px;
+  color: rgba(202, 202, 54, 0.8);
+}
+
+.banner-text h2 {
+  font-size: 36px;
+  font-weight: 700;
+  margin-bottom: 15px;
+}
+
+.banner-text h2 span {
+  display: block;
+  color: #ffc107;
+}
+
+.banner-text .subtext {
+  font-size: 18px;
+  margin-bottom: 25px;
+}
+
+.insurer-details {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  margin-top: 30px;
+}
+
+.insurer-details li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.insurer-details img {
+  width: 20px;
+  height: 20px;
+}
+
+/* Login Widget */
+.login-wrapper {
+  background: white;
+  border-radius: 10px;
+  padding: 25px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+  min-width: 320px;
+}
+
+.desktop-login {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.mobile-login {
+  display: none;
+  margin-top: 30px;
+}
+
+.live-partners-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.2);
+  padding: 8px 15px;
+  border-radius: 20px;
+}
+
+.green-dot {
+  width: 10px;
+  height: 10px;
+  background: #28a745;
+  border-radius: 50%;
+}
+
+.login-form h2 {
+  color: #333;
+  font-size: 22px;
+  margin-bottom: 20px;
+}
+
+.login-form h2 span {
+  color: #0d6efd;
+}
+
+.form-group {
+  position: relative;
+  margin-bottom: 20px;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 12px 15px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+}
+
+.form-group label {
+  position: absolute;
+  left: 15px;
+  top: 12px;
+  color: #999;
+}
+
+.form-group input:focus + label,
+.form-group input:not(:placeholder-shown) + label {
+  top: -10px;
+  left: 10px;
+  font-size: 12px;
+  background: white;
+  padding: 0 5px;
+  color: #0d6efd;
+}
+
+.submit-btn {
+  width: 100%;
+  padding: 12px;
+  background: #0d6efd;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  font-weight: 600;
+}
+
+.submit-btn:hover {
+  background: #0b5ed7;
+}
+
+.terms-text {
+  font-size: 12px;
+  color: #666;
+  margin-top: 15px;
+  text-align: center;
+}
+
+.terms-text a {
+  color: #b1c1db;
+}
+
+.qr-code img {
+  width: 150px;
+  border: 1px solid #eee;
+  border-radius: 5px;
+}
+
+/* Benefits Section */
+.benefits-section {
+  padding: 60px 0;
+  background: #f8f9fa;
+}
+
+.benefits-section h2 {
+  text-align: center;
+  font-size: 32px;
+  margin-bottom: 15px;
+}
+
+.section-description {
+  text-align: center;
+  max-width: 700px;
+  margin: 0 auto 40px;
+}
+
+.benefits-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 30px;
+}
+
+.benefit-card {
+  background: white;
+  border-radius: 10px;
+  padding: 30px 25px;
+  text-align: center;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+}
+
+.benefit-icon {
+  width: 70px;
+  height: 70px;
+  margin: 0 auto 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #e9f0ff;
+  border-radius: 50%;
+}
+
+.benefit-icon img {
+  width: 40px;
+  height: 40px;
+}
+
+.benefit-card h3 {
+  font-size: 20px;
+  margin-bottom: 15px;
+}
+
+.help-contact {
+  text-align: center;
+  margin-top: 40px;
+}
+
+.mobile-help {
+  display: none;
+}
+
+/* Achievements Section */
+.achievements-section {
+  padding: 60px 0;
+  text-align: center;
+}
+
+.achievements-grid {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 40px;
+}
+
+.achievement-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 200px;
+}
+
+.achievement-icon img {
+  width: 60px;
+  height: 60px;
+  margin-bottom: 15px;
+}
+
+.achievement-text {
+  font-size: 28px;
+  font-weight: 700;
+}
+
+.achievement-text span {
+  display: block;
+  font-size: 16px;
+  margin-top: 5px;
+}
+
+/* POSP Info Section */
+.posp-info-section {
+  padding: 60px 0;
+  background: #f8f9fa;
+}
+
+.content-wrapper {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 40px;
+}
+
+.info-image img {
+  width: 100%;
+  max-width: 500px;
+  align-items: center;
+}
+
+.info-text h2 {
+  font-size: 32px;
+  margin-bottom: 20px;
+}
+
+/* Responsive Styles */
+@media (max-width: 768px) {
+  .banner-text h2 {
+    font-size: 28px;
+  }
+  
+  .desktop-login {
+    display: none;
+  }
+  
+  .mobile-login {
+    display: block;
+  }
+  
+  .mobile-help {
+    display: block;
+  }
+  
+  .desktop-help {
+    display: none;
+  }
+  
+  .content-wrapper {
+    flex-direction: column;
+    text-align: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .banner-text h2 {
+    font-size: 24px;
+  }
+  
+  .insurer-details {
+    flex-direction: column;
+    gap: 15px;
+  }
+  
+  .benefits-grid {
+    grid-template-columns: 1fr;
+  }
+}

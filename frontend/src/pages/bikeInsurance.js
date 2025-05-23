@@ -11,6 +11,7 @@ const BikeInsurance = () => {
   const [showPlans, setShowPlans] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState(null);
   const [formErrors, setFormErrors] = useState({});
+  const [existingInsurance, setExistingInsurance] = useState(null); 
   const [formData, setFormData] = useState({
     bikeNumber: '',
     mobileNumber: '',
@@ -19,7 +20,6 @@ const BikeInsurance = () => {
     purchasedYear: '',
   });
   const [paymentInProgress, setPaymentInProgress] = useState(false);
-  const [insuranceStatus, setInsuranceStatus] = useState(null);
 
   const insuranceTypes = [
     {
@@ -152,133 +152,155 @@ const BikeInsurance = () => {
     return Object.keys(errors).length === 0;
   };
 
-  const saveBikeInsuranceForm = async (paymentId) => {
-    try {
-      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/bike-insurance-form`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
-        body: JSON.stringify({
-          bikeNumber: formData.bikeNumber,
-          mobileNumber: formData.mobileNumber,
-          bikeBrand: formData.bikeBrand,
-          bikeType: formData.biketype,
-          purchasedYear: formData.purchasedYear,
-          insuranceType: activeTab,
-          planId: selectedPlan._id,
-          paymentId: paymentId,
-          status: 'completed'
-        })
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to save bike insurance form');
-      }
-
-      return await response.json();
-    } catch (error) {
-      console.error('Error saving bike insurance form:', error);
-      throw error;
-    }
-  };
-
  const handleCheckPrices = async (e) => {
   e.preventDefault();
   if (!validateForm()) return;
   
   setLoading(true);
-  
   try {
-    // First check if bike already has active insurance
-    const checkResponse = await fetch(`${process.env.REACT_APP_API_URL}/api/bike-insurance/check?bikeNumber=${formData.bikeNumber}`, {
+    // Check for existing insurance
+    const response = await fetch(`${process.env.REACT_APP_API_URL}/api/bike-insurance-form/check?bikeNumber=${formData.bikeNumber}`, {
       headers: {
         'Authorization': `Bearer ${localStorage.getItem('token')}`
       }
     });
-
-    const checkData = await checkResponse.json();
     
-    if (checkData.hasActiveInsurance) {
-      // Show message that bike already has insurance
-      alert(`This bike already has an active insurance policy that expires on ${new Date(checkData.expiryDate).toLocaleDateString()}`);
-      setLoading(false);
+    if (!response.ok) {
+      throw new Error('Failed to check existing insurance');
+    }
+    
+    const data = await response.json();
+    
+    if (data.hasInsurance) {
+      setExistingInsurance(data.policy);
       return;
     }
-
-    // If no active insurance, proceed to show plans
-    setShowPlans(true);
     
+    // If no existing insurance, proceed to show plans
+    setShowPlans(true);
   } catch (error) {
-    console.error('Error checking bike insurance:', error);
-    alert('Error checking bike insurance status');
+    console.error('Error checking existing insurance:', error);
+    // Even if check fails, we can proceed but show error
+    alert('Error checking existing insurance. Please verify your bike details.');
+    setShowPlans(true);
   } finally {
     setLoading(false);
   }
 };
 
-
 const handleBuyNowClick = async (plan) => {
   setSelectedPlan(plan);
   setPaymentInProgress(true);
-
-  const token = localStorage.getItem('token');
-  if (!token || !token.startsWith('eyJ')) { // Basic JWT format check
-    alert('Please log in again.');
-    localStorage.removeItem('token');
-    window.location.href = '/login';
-    return;
-  }
+  let formId; // Declare formId at the top to use in catch block
 
   try {
-    // 2. Proceed with the API call...
+    // 1. Create insurance record
+    console.log('Creating insurance record...');
+    const insurancePayload = {
+      bikeNumber: formData.bikeNumber.toUpperCase(),
+      mobileNumber: formData.mobileNumber,
+      bikeBrand: formData.bikeBrand,
+      bikeType: formData.biketype,
+      purchasedYear: Number(formData.purchasedYear),
+      insuranceType: activeTab,
+      planId: plan._id,
+      status: 'pending_payment',
+      userId: localStorage.getItem('userId')
+    };
+
     const formResponse = await fetch(`${process.env.REACT_APP_API_URL}/api/bike-insurance-form`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`, // Attach token
+        'Authorization': `Bearer ${localStorage.getItem('token')}`,
       },
-      body: JSON.stringify({
-        bikeNumber: formData.bikeNumber,
-        mobileNumber: formData.mobileNumber,
-        bikeBrand: formData.bikeBrand,
-        bikeType: formData.biketype,
-        purchasedYear: formData.purchasedYear,
-        insuranceType: activeTab,
-        planId: plan._id,
-        status: 'pending',
-      }),
+      body: JSON.stringify(insurancePayload),
     });
 
-    console.log("Form submission response:", formResponse);
-
-    if (!formResponse.ok) {
-      const errorData = await formResponse.json().catch(() => ({}));
-      console.error("Error details:", errorData);
-      throw new Error(errorData.message || 'Failed to save bike insurance form');
-    }
-
     const responseData = await formResponse.json();
-    console.log("Form saved successfully:", responseData);
-
-    const { _id: formSubmissionId } = responseData;
-
-    const paymentResult = await initiatePayment(plan, 'bike', formSubmissionId);
-    console.log("Payment result:", paymentResult);
-
-    if (paymentResult?.success) {
-      alert('Payment and registration successful!');
-    } else {
-      throw new Error(paymentResult?.message || 'Payment failed');
+    console.log('Insurance record response:', responseData);
+    
+    if (!formResponse.ok) {
+      throw new Error(responseData.message || 'Failed to create insurance record');
     }
+
+    formId = responseData._id || responseData.data?._id;
+    console.log('Created insurance record ID:', formId);
+
+    // 2. Initiate payment
+    console.log('Initiating payment...');
+    const paymentResult = await initiatePayment(plan, 'bike', formId);
+    console.log('Payment result:', paymentResult);
+    
+    if (!paymentResult.success) {
+      throw new Error(paymentResult.message || 'Payment failed');
+    }
+
+    // 3. Complete insurance
+    console.log('Completing insurance...');
+    const completeResponse = await fetch(
+      `${process.env.REACT_APP_API_URL}/api/bike-insurance-form/${formId}/complete`, 
+      {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        },
+        body: JSON.stringify({
+          planId: plan._id,
+          paymentId: paymentResult.paymentId,
+          razorpayOrderId: paymentResult.razorpayOrderId,
+          razorpaySignature: paymentResult.razorpaySignature,
+          paymentAmount: plan.price,
+          coverageDetails: plan.coverageDetails || {}
+        }),
+      }
+    );
+
+    const completeData = await completeResponse.json();
+    console.log('Complete insurance response:', completeData);
+    
+    if (!completeResponse.ok) {
+      throw new Error(completeData.message || 'Failed to complete insurance');
+    }
+
+    console.log('Insurance completed successfully!');
+    alert('Insurance purchased successfully!');
+    // Redirect to success page
+    window.location.href = `/insurance-success?policy=${completeData.data.policyNumber}`;
   } catch (error) {
-    console.error('Payment failed:', error);
-    alert(error.message || 'Payment failed. Please try again.');
+    console.error('Full error details:', {
+      message: error.message,
+      stack: error.stack,
+      formId: formId,
+      response: error.response
+    });
+    
+    alert(`Error: ${error.message}`);
+    
+    // Update insurance record to failed status if it exists
+    if (formId) {
+      try {
+        await fetch(`${process.env.REACT_APP_API_URL}/api/bike-insurance-form/${formId}/fail`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          },
+          body: JSON.stringify({ 
+            status: 'failed',
+            rejectionReason: error.message 
+          }),
+        });
+      } catch (updateError) {
+        console.error('Failed to update insurance status:', updateError);
+      }
+    }
   } finally {
     setPaymentInProgress(false);
   }
 };
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({
@@ -295,6 +317,27 @@ const handleBuyNowClick = async (plan) => {
     }
   };
 
+  const ExistingInsuranceAlert = ({ policy, onContinue }) => (
+  <div className="existing-insurance-alert">
+    <div className="alert-content">
+      <h3>Existing Insurance Found</h3>
+      <p>
+        This bike number <strong>{policy.policyNumber}</strong> already has an active {policy.insurer} policy 
+        that expires on {new Date(policy.expiryDate).toLocaleDateString()}.
+      </p>
+      <div className="alert-actions">
+        <button className="btn-secondary" onClick={() => setExistingInsurance(null)}>
+          Go Back
+        </button>
+        <button className="btn-primary" onClick={onContinue}>
+          Continue Anyway
+        </button>
+      </div>
+    </div>
+  </div>
+);
+
+
   return (
     <>
       <div className="car-insurance-page">
@@ -307,9 +350,17 @@ const handleBuyNowClick = async (plan) => {
           </div>
         </div>
 
-        {/* Bike Details Form - Show first */}
-        {!showPlans && (
-          <section className="bike-details-form">
+       {existingInsurance ? (
+  <ExistingInsuranceAlert 
+    policy={existingInsurance}
+    onContinue={() => {
+      setExistingInsurance(null);
+      setShowPlans(true);
+    }}
+  />
+) :!showPlans && (
+          <section className="car-details-form">
+            <div className="form-with-image-container">
             <div className="container">
               <h2>Enter Your Bike Details</h2>
                                 <label htmlFor="bikeNumber">Bike Number</label>
@@ -399,6 +450,18 @@ const handleBuyNowClick = async (plan) => {
                 </div>
               </form>
             </div>
+             <div className="form-image-container">
+        <img 
+          src="https://5.imimg.com/data5/SELLER/Default/2025/2/491776287/MI/TZ/NA/8287604/bike-insurance-services.png" 
+          alt="Car Insurance Illustration"
+          className="form-side-image"
+          onError={(e) => {
+            e.target.onerror = null;
+            e.target.src = 'https://via.placeholder.com/400x600?text=Car+Insurance';
+          }}
+        />
+      </div>
+    </div>
           </section>
         )}
 

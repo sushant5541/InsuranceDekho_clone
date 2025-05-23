@@ -1,10 +1,11 @@
+// frontend/src/pages/TermInsurance.js
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
-import '../styles/LifeInsurance.css';
+import '../styles/TermInsurance.css';
 import Footer from '../components/Footer/Footer';
-import LifeInsurancePlans from '../components/LifeInsurancePlans';
+import TermInsurancePlans from '../components/TermInsurancePlans';
 
-const LifeInsurance = () => {
+const TermInsurance = () => {
   const { user } = useAuth();
   const [formData, setFormData] = useState({
     name: user?.name || '',
@@ -65,27 +66,22 @@ const LifeInsurance = () => {
     }));
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
     const errors = validateForm();
     setFormErrors(errors);
     
     if (Object.keys(errors).length === 0) {
       setIsSubmitting(true);
-      try {
-        setShowPlans(true);
-        
-        setTimeout(() => {
-          const plansSection = document.querySelector('.plans-section');
-          if (plansSection) {
-            plansSection.scrollIntoView({ behavior: 'smooth' });
-          }
-        }, 100);
-      } catch (error) {
-        console.error('Error submitting form:', error);
-      } finally {
+      setShowPlans(true);
+      
+      setTimeout(() => {
+        const plansSection = document.querySelector('.plans-section');
+        if (plansSection) {
+          plansSection.scrollIntoView({ behavior: 'smooth' });
+        }
         setIsSubmitting(false);
-      }
+      }, 1000);
     }
   };
 
@@ -93,10 +89,10 @@ const LifeInsurance = () => {
     <>
       <div className="insurance-dekho-page">
         {/* Hero Banner */}
-        <div className="hero-banner">
+        <div className="hero-banner term-banner">
           <div className="container">
             <div className="banner-content">
-              <h1>Get <span>₹1 Crore</span> Life Cover at <span>₹16/day</span></h1>
+              <h1>Get <span>₹1 Crore</span> Term Cover at <span>₹490/month</span></h1>
               <p>Compare 15+ insurers and buy online in 5 minutes</p>
               
               <div className="insurer-logos">
@@ -241,58 +237,61 @@ const LifeInsurance = () => {
         <div className="plans-section">
           <div className="container">
             <div className="section-header">
-              <h2>Best Life Insurance Plans for High Returns</h2>
+              <h2>Best Term Insurance Plans for Maximum Protection</h2>
             </div>
             
             {showPlans ? (
-              <LifeInsurancePlans formData={{ ...formData, age }} />
+              <TermInsurancePlans formData={{ ...formData, age }} />
             ) : (
               <>
                 <div className="plans-content">
                   <p className="intro-text">
-                    When it comes to financial planning, securing the future of yourself and your loved ones is extremely important. 
-                    Life insurance beyond being a safety net, can also serve as an investment tool if you invest in the right kind of plan.
+                    Term insurance provides pure life cover at affordable premiums, ensuring your family's financial security 
+                    even in your absence. It's the most cost-effective way to get a high sum assured for your loved ones.
                   </p>
                   
                   <div className="plan-highlights">
                     <div className="plan-card">
-                      <h3>Bajaj Allianz POS Goal Suraksha</h3>
+                      <h3>HDFC Life Click 2 Protect Life</h3>
                       <p>
-                        The Bajaj Allianz POS Goal Suraksha plan is a Non-Participating Non-linked Life Insurance Plan. 
-                        This plan provides both maturity and death benefits. Under maturity benefit, if the policyholder 
-                        meets an unfortunate death, then financial assistance will be given to the family of the policyholder.
+                        HDFC Life Click 2 Protect Life is a pure term insurance plan that offers comprehensive life cover 
+                        at affordable premiums. It provides multiple plan options to choose from, including increasing cover, 
+                        return of premium, and critical illness rider options.
                       </p>
                     </div>
                     
                     <div className="plan-card">
-                      <h3>HDFC Life Sanchay Fixed Maturity Plan</h3>
+                      <h3>ICICI Pru iProtect Smart</h3>
                       <p>
-                        The HDFC Life Sanchay Fixed Maturity Plan is a non-linked, non-participating, Individual, savings, 
-                        life insurance plan. You can buy this plan as both a joint and a single plan. Ideal for long-term 
-                        investors, it ensures a secure future with disciplined savings.
+                        ICICI Pru iProtect Smart is a comprehensive term insurance plan that offers life cover along with 
+                        optional riders for critical illness, accidental death, and disability. It provides flexibility to 
+                        choose between regular pay or limited pay premium payment options.
                       </p>
                     </div>
                     
                     <div className="plan-card">
-                      <h3>Axis Max Life Smart Wealth Plan</h3>
+                      <h3>Max Life Smart Secure Plus Plan</h3>
                       <p>
-                        The Axis Max Life Smart Wealth Plan has a minimum entry age of 91 days and a maximum entry age of 65 years. 
-                        This plan provides maturity benefits, death benefits, and surrender benefits to the policyholders.
+                        Max Life Smart Secure Plus Plan offers a pure protection term insurance cover with the option to 
+                        add riders for enhanced protection. It provides tax benefits under Section 80C and Section 10(10D) 
+                        of the Income Tax Act, 1961.
                       </p>
                     </div>
                   </div>
                 </div>
                 <div className="cta-banner">
-                  <p>Fill the form above to view personalized life insurance plans</p>
+                  <p>Fill the form above to view personalized term insurance plans</p>
                 </div>
               </>
             )}
           </div>
         </div>
-      </div>
+
+        {/* Why Choose Us Section */}
+    </div>
       <Footer />
     </>
   );
 };
 
-export default LifeInsurance;
+export default TermInsurance;

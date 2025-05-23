@@ -56,7 +56,7 @@ router.post('/', protect, async (req, res) => {
 // @access  Private
 router.put('/:id/complete', protect, async (req, res) => {
   try {
-    const { planId, paymentId, paymentAmount, coverageDetails } = req.body;
+    const { paymentId, paymentAmount, coverageDetails } = req.body;
 
     const form = await HealthInsuranceForm.findOne({
       _id: req.params.id,
@@ -71,7 +71,7 @@ router.put('/:id/complete', protect, async (req, res) => {
       });
     }
 
-    form.planId = planId;
+    // Update payment and policy details
     form.paymentId = paymentId;
     form.paymentAmount = paymentAmount;
     form.coverageDetails = coverageDetails;
@@ -81,6 +81,11 @@ router.put('/:id/complete', protect, async (req, res) => {
     form.paymentDate = new Date();
 
     await form.save();
+
+    // Here you might want to trigger any post-payment actions:
+    // - Send confirmation email
+    // - Generate policy document
+    // - Notify customer support
 
     res.status(200).json({
       success: true,
@@ -94,6 +99,51 @@ router.put('/:id/complete', protect, async (req, res) => {
   }
 });
 
+router.put('/:id/submit', protect, async (req, res) => {
+  try {
+    const { 
+      name, mobile, gender, address, city, pincode, 
+      whatsAppOptIn, members, planId 
+    } = req.body;
+
+    let form = await HealthInsuranceForm.findOne({
+      _id: req.params.id,
+      userId: req.user._id,
+      status: 'draft'
+    });
+
+    if (!form) {
+      return res.status(404).json({
+        success: false,
+        error: 'Form not found'
+      });
+    }
+
+    // Update all form data
+    form.name = name;
+    form.mobile = mobile;
+    form.gender = gender;
+    form.address = address;
+    form.city = city;
+    form.pincode = pincode;
+    form.whatsAppOptIn = whatsAppOptIn !== false;
+    form.members = members;
+    form.planId = planId;
+    form.status = 'pending_payment'; // Mark as ready for payment
+    
+    await form.save();
+
+    res.status(200).json({
+      success: true,
+      data: form
+    });
+  } catch (error) {
+    res.status(400).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
 // @desc    Get user's health insurance forms
 // @route   GET /api/health-insurance-form
 // @access  Private
