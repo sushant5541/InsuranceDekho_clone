@@ -1,64 +1,45 @@
-// const express = require('express');
-// const router = express.Router();
-// const TermInsurance = require('../models/TermInsuranceForm');
-// const auth = require('../middleware/auth');
+const express = require('express');
+const router = express.Router();
+const TermInsuranceForm = require('../models/TermInsuranceForm');
+const auth = require('../middleware/auth');
 
-// // POST /api/term-insurance/forms
-// router.post('/forms', auth, async (req, res) => {
-//   try {
-//     const form = new TermInsuranceForm({
-//       user: req.body.userId,
-//       plan: req.body.plan,
-//       personalDetails: req.body.personalDetails,
-//       status: 'pending_payment'
-//     });
+// Handler functions
+const submitTermInsurance = async (req, res) => {
+  try {
+    const form = new TermInsuranceForm({
+      user: req.user._id,
+      plan: req.body.plan,
+      personalDetails: req.body.personalDetails,
+      status: 'pending_payment'
+    });
 
-//     const savedForm = await form.save();
-//     res.status(201).json({
-//       success: true,
-//       formId: savedForm._id,
-//       message: 'Form submitted successfully'
-//     });
-//   } catch (err) {
-//     console.error('Form submission error:', err);
-//     res.status(500).json({
-//       success: false,
-//       message: 'Server error while submitting form'
-//     });
-//   }
-// });
+    const savedForm = await form.save();
+    res.status(201).json(savedForm);
+  } catch (error) {
+    console.error('Error submitting term insurance:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
 
-// // PUT /api/term-insurance/forms/:id/payment
-// router.put('/forms/:id/payment', auth, async (req, res) => {
-//   try {
-//     const updatedForm = await TermInsuranceForm.findByIdAndUpdate(
-//       req.params.id,
-//       {
-//         payment: req.body.paymentId,
-//         status: 'completed'
-//       },
-//       { new: true, runValidators: true }
-//     );
+const updateTermPayment = async (req, res) => {
+  try {
+    const updatedForm = await TermInsuranceForm.findByIdAndUpdate(
+      req.params.id,
+      {
+        payment: req.body.paymentId,
+        status: 'completed'
+      },
+      { new: true }
+    );
+    res.json(updatedForm);
+  } catch (error) {
+    console.error('Error updating payment:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
 
-//     if (!updatedForm) {
-//       return res.status(404).json({
-//         success: false,
-//         message: 'Form not found'
-//       });
-//     }
+// Route definitions
+router.post('/', auth, submitTermInsurance);
+router.put('/:id/payment', auth, updateTermPayment);
 
-//     res.json({
-//       success: true,
-//       message: 'Payment updated successfully',
-//       form: updatedForm
-//     });
-//   } catch (err) {
-//     console.error('Payment update error:', err);
-//     res.status(500).json({
-//       success: false,
-//       message: 'Server error while updating payment'
-//     });
-//   }
-// });
-
-// module.exports = router;
+module.exports = router;

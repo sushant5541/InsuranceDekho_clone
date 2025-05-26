@@ -24,14 +24,13 @@ class PaymentService {
     }
   }
 
-  async createOrder(amount, currency, userId, planId, planType, formId) {
-    try {
-      // Validate planType
-      const normalizedPlanType = planType.toLowerCase();
-      if (!['bike', 'car'].includes(normalizedPlanType)) {
-        throw new Error('Invalid insurance type');
-      }
-
+async createOrder(amount, currency, userId, planId, planType, formId) {
+  try {
+    // Validate planType
+    const normalizedPlanType = planType.toLowerCase();
+    if (!['bike', 'car', 'term'].includes(normalizedPlanType)) {
+      throw new Error('Invalid insurance type');
+    }
       const options = {
         amount: amount * 100,
         currency: currency || 'INR',
@@ -112,12 +111,12 @@ class PaymentService {
       );
 
       // Update appropriate form based on plan type
-      if (normalizedPlanType === 'bike') {
-        await BikeInsuranceForm.findByIdAndUpdate(formId, {
+       if (normalizedPlanType === 'term') {
+        await TermInsuranceForm.findByIdAndUpdate(formId, {
           paymentId: payment._id,
           status: 'completed'
         });
-      } else if (normalizedPlanType === 'car' && this.CarInsuranceForm) {
+      }else if (normalizedPlanType === 'car' && this.CarInsuranceForm) {
         await this.CarInsuranceForm.findByIdAndUpdate(formId, {
           paymentId: payment._id,
           status: 'completed'

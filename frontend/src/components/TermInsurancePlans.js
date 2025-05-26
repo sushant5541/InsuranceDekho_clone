@@ -1,15 +1,17 @@
 // frontend/src/components/TermInsurancePlans.js
 // frontend/src/components/TermInsurancePlans.js
-import React from 'react';
+import React, { useState } from 'react';
 import '../styles/TermInsurance.css';
 import usePayment from '../hooks/usePayment';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 
 const TermInsurancePlans = ({ formData }) => {
-  const { initiatePayment, loading, error } = usePayment();
+ const { initiatePayment, loading: paymentLoading, error: paymentError } = usePayment();
   const { user, isAuthenticated } = useAuth();
   const navigate = useNavigate();
+    const [formSubmissionId, setFormSubmissionId] = useState(null);
+  const [processing, setProcessing] = useState(false);
   const termPlans = [
     {
       id: 1,
@@ -74,62 +76,101 @@ const TermInsurancePlans = ({ formData }) => {
   ];
 
    const handleBuyNow = async (plan) => {
-    if (!isAuthenticated) {
-      navigate('/login', { state: { from: window.location.pathname } });
-      return;
-    }
+  if (!isAuthenticated) {
+    navigate('/login', { state: { from: window.location.pathname } });
+    return;
+  }
 
-    try {
-      // 1. Create form submission
-      const formSubmission = await submitTermInsuranceForm(plan);
-      
-      // 2. Initiate payment
-      const paymentResult = await initiatePayment(plan, 'term', formSubmission._id);
-      
-      if (paymentResult.success) {
-        // 3. Update form with payment details
-        await updateTermInsuranceForm(formSubmission._id, paymentResult.paymentId);
-        
-        // Redirect to success page
-        navigate('/payment-success', {
-          state: {
-            paymentId: paymentResult.paymentId,
-            planType: 'term',
-            planName: plan.name
-          }
-        });
-      } else {
-        // Handle payment failure
-        console.error('Payment failed:', paymentResult.message);
-        alert(`Payment failed: ${paymentResult.message}`);
-      }
-    } catch (err) {
-      console.error('Error during purchase:', err);
-      alert(`Error: ${err.message}`);
-    }
-  };
+  setProcessing(true);
 
-  const submitTermInsuranceForm = async (plan) => {
-    const response = await fetch(`${process.env.REACT_APP_API_URL}/api/term-insurance-form`, {
+  try {
+    // 1. Submit term insurance form
+    const formResponse = await fetch(`${process.env.REACT_APP_API_URL}/api/term-insurance-form`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${localStorage.getItem('token')}`
       },
       body: JSON.stringify({
-        user: user._id,
         plan: plan.id,
-        personalDetails: formData,
-        status: 'pending_payment'
+        personalDetails: formData
       })
     });
+
+    if (!formResponse.ok) throw new Error('Form submission failed');
     
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.message || 'Failed to submit form');
+    const formData = await formResponse.json();
+    const formId = formData._id;
+
+    // 2. Initiate payment
+    const paymentResult = await initiatePayment(plan, 'term', formId);
+    
+    if (paymentResult.success) {
+      // 3. Update form with payment details
+      await fetch(`${process.env.REACT_APP_API_URL}/api/term-insurance-form/${formId}/payment`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify({
+          paymentId: paymentResult.paymentId
+        })
+      });
+
+      navigate('/payment-success', {
+        state: {
+          paymentId: paymentResult.paymentId,
+          planType: 'term',
+          planName: plan.name,
+          insurer: plan.insurer,
+          amount: plan.price
+        }
+      });
+    } else {
+      alert(`Payment failed: ${paymentResult.message}`);
     }
-    
-    return await response.json();
+  } catch (err) {
+    console.error('Purchase error:', err);
+    alert(`Error: ${err.message}`);
+  } finally {
+    setProcessing(false);
+  }
+};
+
+  const submitTermInsuranceForm = async (plan) => {
+    try {
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/term-insurance-form`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify({
+          user: user._id,
+          plan: plan._id || plan.id,
+          personalDetails: formData,
+          status: 'pending_payment',
+          selectedPlan: {
+            name: plan.name,
+            insurer: plan.insurer,
+            price: plan.price,
+            features: plan.features
+          }
+        })
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to submit application');
+      }
+      
+      const data = await response.json();
+      return data._id || data.id;
+    } catch (error) {
+      console.error('Form submission error:', error);
+      throw error;
+    }
   };
 
   const updateTermInsuranceForm = async (formId, paymentId) => {
@@ -141,17 +182,34 @@ const TermInsurancePlans = ({ formData }) => {
       },
       body: JSON.stringify({
         paymentId,
-        status: 'completed'
+        status: 'completed',
+        completedAt: new Date().toISOString()
       })
     });
     
     if (!response.ok) {
       const errorData = await response.json();
-      throw new Error(errorData.message || 'Failed to update form');
+      throw new Error(errorData.message || 'Failed to update application');
     }
     
     return await response.json();
   };
+
+  const updateTermInsuranceStatus = async (formId, status, reason = '') => {
+    const response = await fetch(`${process.env.REACT_APP_API_URL}/api/term-insurance-form/${formId}/status`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('token')}`
+      },
+      body: JSON.stringify({ status, reason })
+    });
+    
+    if (!response.ok) {
+      console.error('Failed to update application status');
+    }
+  };
+
   return (
     <div className="term-insurance-plans">
       <div className="user-details">
@@ -188,13 +246,18 @@ const TermInsurancePlans = ({ formData }) => {
               <span>From {plan.price}</span>
             </div>
             
-                <div className="plan-actions">
+            <div className="plan-actions">
               <button 
                 className="buy-now-btn" 
                 onClick={() => handleBuyNow(plan)}
-                disabled={loading}
+                disabled={processing || paymentLoading}
               >
-                {loading ? 'Processing...' : 'Buy Now'}
+                {processing || paymentLoading ? (
+                  <>
+                    <span className="spinner-border spinner-border-sm" role="status"></span>
+                    Processing...
+                  </>
+                ) : 'Buy Now'}
               </button>
               <button className="view-details-btn">View Details</button>
             </div>
@@ -206,7 +269,12 @@ const TermInsurancePlans = ({ formData }) => {
         <p>Need help choosing the right plan?</p>
         <button className="expert-help-btn">Talk to our expert</button>
       </div>
-       {error && <div className="error-message">{error}</div>}
+      
+      {paymentError && (
+        <div className="alert alert-danger mt-3">
+          {paymentError}
+        </div>
+      )}
     </div>
   );
 };

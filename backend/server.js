@@ -8,7 +8,6 @@ const morgan = require('morgan');
 
 const authRoute = require('./routes/authRoutes');
 const policyRoutes = require('./routes/policyRoutes');
-const productRoutes = require('./routes/productRoutes');
 const adminRoutes = require('./routes/adminRoutes');
 const advisorRoutes = require('./routes/AdvisorRoute');
 const insuranceRoutes = require('./routes/insuranceRoutes');
@@ -59,7 +58,7 @@ app.use(session({
 // Routes
 app.use('/api/admin', adminRoutes);
 app.use('/api/auth', authRoute);
-app.use('/api/products', productRoutes);
+// app.use('/api/products', productRoutes);
 app.use('/api/policies', policyRoutes);
 app.use('/api/advisors', advisorRoutes);
 app.use('/api/insurance', insuranceRoutes);
@@ -72,7 +71,7 @@ app.use('/api/car-insurance', carInsuranceRoutes);
 app.use('/api/bike-insurance-form', bikeInsuranceFormRoutes);
 app.use('/api/car-insurance-form', carInsuranceFormRoutes);
 app.use('/api/health-insurance-form', healthInsuranceFormRoutes);
-// app.use('/api/term-insurance', termInsuranceRoutes);
+// app.use('/api/term-insurance-form', termInsuranceRoutes);
 
 
 // Health check
