@@ -38,7 +38,9 @@ if (process.env.NODE_ENV === 'development') {
 
 app.use(cors({
   origin: [
-    `http://${process.env.PUBLIC_IP}:3000`,
+    'http://localhost:3000',
+    'http://13.233.194.190:3000',
+    'http://frontend:80'
 
   ],
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
