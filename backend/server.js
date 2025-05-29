@@ -39,7 +39,7 @@ if (process.env.NODE_ENV === 'development') {
 app.use(cors({
   origin: [
     'http://localhost:3000',
-    'http://13.233.194.190:3000',
+    'http://13.203.199.125:3000',
     'http://frontend:80'
 
   ],
